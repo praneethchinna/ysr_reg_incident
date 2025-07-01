@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:video_player/video_player.dart';
@@ -81,8 +82,8 @@ class _VideoScreenState extends State<VideoScreen> {
                 },
                 child: Row(
                   children: [
-                    const Text(
-                      'Skip',
+                    Text(
+                      'skip'.tr(),
                       style: TextStyle(fontSize: 16),
                     ),
                     const SizedBox(width: 8),

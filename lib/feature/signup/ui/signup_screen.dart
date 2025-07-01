@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ysr_reg_incident/app_colors/app_colors.dart';
@@ -47,7 +48,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: ref.watch(nameControllerProvider),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return 'Enter your full name';
+                      return 'enter_your_name'.tr();
                     }
                     return null;
                   },
@@ -62,7 +63,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
                       contentPadding:
                           EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
-                      hintText: 'Enter Your Full Name',
+                      hintText: 'enter_your_full_name'.tr(),
                       filled: true,
                       fillColor: Colors.white),
                 ),
@@ -71,11 +72,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildGenderButton('Male'),
+                      child: _buildGenderButton("Male"),
                     ),
                     SizedBox(width: 16),
                     Expanded(
-                      child: _buildGenderButton('Female'),
+                      child: _buildGenderButton("Female"),
                     ),
                   ],
                 ),
@@ -85,7 +86,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   controller: ref.watch(emailControllerProvider),
                   validator: (value) {
                     if (value!.isEmpty || !value.contains('@')) {
-                      return 'Enter valid email id';
+                      return 'enter_valis_email_ID'.tr();
                     }
                     return null;
                   },
@@ -101,7 +102,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         fit: BoxFit.scaleDown,
                       ),
                     ),
-                    hintText: 'Enter Your email Id',
+                    hintText: 'enter_your_email_ID'.tr(),
                     filled: true,
                     fillColor: Colors.white,
                   ),
@@ -113,7 +114,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   obscureText: _isPasswordVisible,
                   validator: (value) {
                     if (value!.isEmpty || value.length < 8) {
-                      return 'Password should be at least 8 characters';
+                      return 'password_8_chars'.tr();
                     }
                     return null;
                   },
@@ -129,7 +130,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         fit: BoxFit.scaleDown,
                       ),
                     ),
-                    hintText: 'Password',
+                    hintText: 'password'.tr(),
                     filled: true,
                     fillColor: Colors.white,
                     suffixIcon: IconButton(
@@ -150,7 +151,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 SizedBox(height: 30),
                 RegButton(
                     child: Text(
-                      'Next',
+                      'next'.tr(),
                       style: TextStyle(color: Colors.white),
                     ),
                     onPressed: () {

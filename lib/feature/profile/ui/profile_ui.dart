@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import 'package:ysr_reg_incident/feature/profile/provider/profile_provider.dart'
 import 'package:ysr_reg_incident/feature/profile/ui/profile_edit.dart';
 import 'package:ysr_reg_incident/services/shared_preferences.dart';
 import 'package:ysr_reg_incident/utils/reg_buttons.dart';
+import 'package:ysr_reg_incident/widgets/language_selector.dart';
 
 class UserProfileUI extends ConsumerWidget {
   const UserProfileUI({super.key});
@@ -25,7 +27,7 @@ class UserProfileUI extends ConsumerWidget {
         backgroundColor: Colors.white,
         appBar: RegAppBar(
           title: Text(
-            "Profile",
+            "profile".tr(),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
@@ -68,52 +70,88 @@ class UserProfileUI extends ConsumerWidget {
                       ],
                     ),
                     Gap(10),
+                    // Language Selector
+                    LanguageSelector(showLabel: false),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.language,
+                            size: 24,
+                            color: Colors.blue,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'language'.tr(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Gap(10),
                     if (data.mobile.isNotEmpty) ...[
                       ProfileCard(
                         imagePath: 'assets/number_icon.png',
-                        title: "Phone",
+                        title: "phone".tr(),
                         value: data.mobile,
                       ),
                     ],
                     if (data.email.isNotEmpty) ...[
                       ProfileCard(
                         imagePath: 'assets/email_icon.png',
-                        title: "Email",
+                        title: "email".tr(),
                         value: data.email,
                       ),
                     ],
                     if (data.gender.isNotEmpty) ...[
                       ProfileCard(
                         imagePath: 'assets/gender.png',
-                        title: "Gender",
+                        title: "gender".tr(),
                         value: data.gender,
                       ),
                     ],
                     if (data.country.isNotEmpty) ...[
                       ProfileCard(
                         imagePath: 'assets/country_icon.png',
-                        title: "Country",
+                        title: "country".tr(),
                         value: data.country,
                       ),
                     ],
                     if (data.parliament.isNotEmpty) ...[
                       ProfileCard(
                         imagePath: 'assets/parliament_icon.png',
-                        title: "Parliament",
+                        title: "parliament".tr(),
                         value: data.parliament,
                       ),
                     ],
                     if (data.constituency.isNotEmpty) ...[
                       ProfileCard(
                         imagePath: 'assets/assembly_icon.png',
-                        title: "Constituency",
+                        title: "constituency".tr(),
                         value: data.constituency,
                       ),
                     ],
-                    Gap(10),
+
                     SizedBox(height: 30),
                     RegButton(
-                        child: Text("Logout"),
+                        child: Text("logout".tr()),
                         onPressed: () async {
                           ref.read(loginResponseProvider.notifier).state = null;
 
@@ -129,9 +167,10 @@ class UserProfileUI extends ConsumerWidget {
                             MaterialPageRoute(
                               builder: (context) => const LoginUi(),
                             ),
-                                (Route<dynamic> route) => false,
+                            (Route<dynamic> route) => false,
                           );
                         }),
+                    Gap(20)
                   ],
                 ),
               );
@@ -146,6 +185,12 @@ class UserProfileUI extends ConsumerWidget {
                 )));
   }
 }
+
+// Add this to your en.json
+// "language": "Language",
+
+// Add this to your te.json
+// "language": "భాష"
 
 class ProfileCard extends StatelessWidget {
   final String imagePath; // Path to asset image

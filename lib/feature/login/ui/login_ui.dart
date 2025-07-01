@@ -1,19 +1,22 @@
 import 'dart:convert';
 
+import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:ysr_reg_incident/app_colors/app_colors.dart';
-import 'package:ysr_reg_incident/feature/incident_registration/provider/incident_registration_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
-import 'package:ysr_reg_incident/feature/login/ui/validate_otp_screen.dart';
+import 'package:ysr_reg_incident/feature/login/ui/otp_screen1.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
+import 'package:ysr_reg_incident/services/google_sign_in_helper.dart';
 import 'package:ysr_reg_incident/services/shared_preferences.dart';
 import 'package:ysr_reg_incident/utils/reg_background_theme.dart';
 import 'package:ysr_reg_incident/utils/reg_buttons.dart';
+import 'package:ysr_reg_incident/utils/show_error_dialog.dart';
+import 'package:ysr_reg_incident/widgets/language_selector.dart';
 
 class LoginUi extends ConsumerStatefulWidget {
   const LoginUi({super.key});
@@ -23,6 +26,7 @@ class LoginUi extends ConsumerStatefulWidget {
 }
 
 class _LoginUiState extends ConsumerState<LoginUi> {
+  UserCredential? userCredential;
   bool _isPasswordVisible = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -31,13 +35,22 @@ class _LoginUiState extends ConsumerState<LoginUi> {
 
   @override
   Widget build(BuildContext context) {
+    context.locale;
     return RegBackgroundTheme(
         showBackButton: false,
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-              Gap(20),
+              // Language selector at top right
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+                  child: LanguageSelector(showLabel: false),
+                ),
+              ),
+              Gap(10),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -46,11 +59,11 @@ class _LoginUiState extends ConsumerState<LoginUi> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Gap(30),
-                        Text("Mobile Number or Email",
+                        Gap(10),
+                        Text("mobile_number_or_email".tr(),
                             style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w400,
                                 color: Colors.black)),
                         Gap(5),
                         TextFormField(
@@ -77,10 +90,10 @@ class _LoginUiState extends ConsumerState<LoginUi> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Password",
+                        Text("password".tr(),
                             style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w400,
                                 color: Colors.black)),
                         Gap(5),
                         TextFormField(
@@ -121,13 +134,23 @@ class _LoginUiState extends ConsumerState<LoginUi> {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton(
-                        onPressed: () {},
-                        child: Text('Forgot Password?',
-                            style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  OtpScreen1(isNewUser: false),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          "forgot_password".tr(),
+                          style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black),
+                        ),
                       ),
                     ),
                   ),
@@ -164,27 +187,74 @@ class _LoginUiState extends ConsumerState<LoginUi> {
                           }
                         },
                         child: Text(
-                          'Sign In',
+                          "sign_in".tr(),
                           style: TextStyle(
-                              fontSize: 13,
                               color: Colors.white,
-                              fontWeight: FontWeight.w400),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600),
                         )),
                   ),
                   SizedBox(height: 20),
                   Center(
-                      child: Text(
-                    'Or Sign-in With',
-                    style: TextStyle(
-                        fontSize: 14,
+                    child: Text(
+                      "or_sign_in_with".tr(),
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Colors.blueAccent),
-                  )),
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: OutlinedButton.icon(
-                      onPressed: () async {},
+                      onPressed: () async {
+                        EasyLoading.show();
+                        signInWithGoogle().then((result) async {
+                          userCredential = result;
+                          if (userCredential == null) {
+                            EasyLoading.dismiss();
+                            throw Error();
+                          }
+                          final value = userCredential?.user?.email;
+                          await signOut();
+                          return LoginApi(ref.read(dioProvider))
+                              .googleSigninIncident(token: value!);
+
+                        }).then((value) async {
+                          EasyLoading.dismiss();
+                          if (value != null) {
+                            final prefs = await ref
+                                .read(sharedPreferencesProvider.future);
+                            prefs.setString(
+                                "userData", jsonEncode(value.toJson()));
+                            ref.read(loginResponseProvider.notifier).state =
+                                value;
+                            showSuccessDialog(context);
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => OtpScreen1(
+                                        phoneNumber:
+                                            userCredential?.user?.phoneNumber,
+                                        isNewUser: true,
+                                      )),
+                            );
+                          }
+                        }).catchError((e, stack) {
+                          showDialog(
+                            context: context,
+                            builder: (builder) => ErrorDialog(
+                              title: 'Error',
+                              message: e.toString(),
+                            ),
+                          );
+                        }).whenComplete(() {
+                          EasyLoading.dismiss();
+                        });
+                      },
                       icon: Image.asset('assets/google.png', height: 35),
                       label: Text(
                         'Sign in with Google',
@@ -221,12 +291,12 @@ class _LoginUiState extends ConsumerState<LoginUi> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ValidateOtpScreen(),
+                              builder: (context) => OtpScreen1(),
                             ),
                           );
                         },
                         child: Text(
-                          'Sign Up',
+                          'sign_up'.tr(),
                           style: TextStyle(
                             color: Colors.blueAccent,
                             fontStyle: FontStyle.italic,

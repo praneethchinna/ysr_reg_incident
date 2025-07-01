@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "227479719032",
+    "project_id": "ysrcpdigitalbook",
+    "storage_bucket": "ysrcpdigitalbook.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227479719032:android:8c8c3414dcf2ced149f18d",
+        "android_client_info": {
+          "package_name": "com.example.ysr_reg_incident"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5Pe8FpgN2Ir0Yc_GQqDZRw-qsAaBZZwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

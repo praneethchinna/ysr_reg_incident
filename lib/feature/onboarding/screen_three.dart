@@ -1,14 +1,41 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:gap/gap.dart';
 import 'package:ysr_reg_incident/feature/login/ui/login_ui.dart';
 import 'package:ysr_reg_incident/feature/onboarding/video_screen.dart';
 
-class ScreenThree extends StatelessWidget {
+class ScreenThree extends StatefulWidget {
   const ScreenThree({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ScreenThree> createState() => _ScreenThreeState();
+}
+
+class _ScreenThreeState extends State<ScreenThree> {
+  final scrollController = ScrollController();
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(milliseconds: 100), () {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: Duration(seconds: 3),
+          curve: Curves.easeOut,
+        );
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) { context.locale;
     return Container(
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
@@ -23,6 +50,7 @@ class ScreenThree extends StatelessWidget {
           ),
         ),
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             children: [
               Image.asset(
@@ -32,7 +60,7 @@ class ScreenThree extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                "Verified. Secured. \nRespected.",
+                "verified_secured".tr(),
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w600,
@@ -42,7 +70,7 @@ class ScreenThree extends StatelessWidget {
               ),
               const Gap(16),
               Text(
-                ''''“Your concerns are received with \ntrust, verified with care, and \nresolved with respect. ”''',
+                'your_concern'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
@@ -74,7 +102,7 @@ class ScreenThree extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Let\'s Get Started',
+                        'get_started'.tr(),
                         style: TextStyle(
                           fontSize: 16,
                           color: Color(0xFF2E1861),

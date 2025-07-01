@@ -77,6 +77,23 @@ class LoginApi {
       throw Exception("Failed to verify OTP");
     }
   }
+
+  Future<LoginResponse?> googleSigninIncident({required String token}) async {
+    try {
+      final response =
+          await _dio.post('/auth/email-incident', data: {"email": token});
+
+      if (response.statusCode == 200 && response.data['user_id'] != null) {
+        if (response.data["blocked"] == true) {
+          throw Exception("User is blocked. Please, contact Support Team");
+        }
+        return LoginResponse.fromMap(response.data);
+      }
+      return null;
+    } catch (e) {
+      throw e.toString();
+    }
+  }
 }
 
 class LoginResponse {

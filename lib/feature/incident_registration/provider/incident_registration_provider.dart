@@ -47,8 +47,6 @@ class IncidentNotifier extends _$IncidentNotifier {
     );
   }
 
-
-
   Future<String> getLocationAndAddress(loc.Location location) async {
     bool serviceEnabled;
     loc.PermissionStatus permissionGranted;
@@ -90,6 +88,17 @@ class IncidentNotifier extends _$IncidentNotifier {
     }
   }
 
+  void updateIsCurrentIncident(bool isCurrentIncident) {
+    _updateState(state.value?.copyWith(
+        isCurrentIncident: isCurrentIncident,
+        incidentDate: isCurrentIncident
+            ? DateFormat('dd MMMM, yyyy').format(DateTime.now())
+            : "",
+        incidentTime: isCurrentIncident
+            ? DateFormat('h:mm a').format(DateTime.now())
+            : ""));
+  }
+
   void updateStep(int newStep) {
     _updateState(state.value?.copyWith(step: newStep));
   }
@@ -108,12 +117,13 @@ class IncidentNotifier extends _$IncidentNotifier {
     final DateTime now = DateTime.now();
     final String incidentDate = DateFormat('dd MMMM, yyyy').format(now);
     final String incidentTime = DateFormat('h:mm a').format(now);
-
+    loc.Location location = loc.Location();
+    String locationAndAddress = await getLocationAndAddress(location);
     state = AsyncValue.data(
       IncidentState(
         incidentType: "",
         description: "",
-        location: "",
+        location: locationAndAddress,
         incidentTypes: incidentTypes,
         incidentDate: incidentDate,
         incidentTime: incidentTime,
@@ -171,6 +181,7 @@ class IncidentState {
   final List<PlatformFile> images;
   final bool agreed;
   final int step;
+  final bool isCurrentIncident;
 
   IncidentState(
       {required this.incidentType,
@@ -181,6 +192,7 @@ class IncidentState {
       this.incidentTime = '',
       this.agreed = false,
       this.step = 1,
+      this.isCurrentIncident = true,
       this.images = const []});
 
   IncidentState copyWith({
@@ -192,6 +204,7 @@ class IncidentState {
     String? incidentTime,
     List<PlatformFile>? images,
     bool? agreed,
+    bool? isCurrentIncident,
     int? step,
   }) =>
       IncidentState(
@@ -203,5 +216,6 @@ class IncidentState {
           incidentTime: incidentTime ?? this.incidentTime,
           images: images ?? this.images,
           agreed: agreed ?? this.agreed,
+          isCurrentIncident: isCurrentIncident ?? this.isCurrentIncident,
           step: step ?? this.step);
 }

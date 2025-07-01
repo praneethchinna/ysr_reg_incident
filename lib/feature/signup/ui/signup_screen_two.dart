@@ -1,10 +1,11 @@
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:ysr_reg_incident/feature/login/ui/login_ui.dart';
-import 'package:ysr_reg_incident/feature/login/ui/otp_screen.dart';
+import 'package:ysr_reg_incident/feature/login/ui/validate_otp_screen.dart';
 import 'package:ysr_reg_incident/feature/signup/models/assembly.dart';
 import 'package:ysr_reg_incident/feature/signup/models/parliament.dart';
 import 'package:ysr_reg_incident/feature/signup/repo/data.dart';
@@ -51,7 +52,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                 showSelectedItems: true,
                 searchFieldProps: TextFieldProps(
                   decoration: InputDecoration(
-                    hintText: "Search country...",
+                    hintText: "search_country".tr(),
                     prefixIcon: Icon(Icons.search),
                     border: OutlineInputBorder(),
                   ),
@@ -68,7 +69,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                 decoration: InputDecoration(
                   suffixIcon:
                       Icon(Icons.keyboard_arrow_down, color: Colors.teal),
-                  labelText: 'Country ',
+                  labelText: '${'country'.tr()} ',
                   border: OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -91,7 +92,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                   showSelectedItems: true,
                   searchFieldProps: TextFieldProps(
                     decoration: InputDecoration(
-                      hintText: "Search State...",
+                      hintText: "search_state".tr(),
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
                     ),
@@ -108,7 +109,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                   decoration: InputDecoration(
                     suffixIcon:
                         Icon(Icons.keyboard_arrow_down, color: Colors.teal),
-                    labelText: 'State ',
+                    labelText: '${'state'.tr()} ',
                     border: OutlineInputBorder(),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -126,7 +127,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
             SizedBox(height: 20),
             AsyncDropdownSelector<Parliament>(
               showSubtitle: false,
-              hintText: "Parliament",
+              hintText: "parliament".tr(),
               subTitle: "",
               itemsProvider: parliamentProvider,
               textEditingController: parliamentTFController,
@@ -169,7 +170,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
               },
               validator: (value) {
                 if (value == "Parliament" || value?.isEmpty == true) {
-                  return "Please select Parliament";
+                  return "select_parliament".tr();
                 }
                 return null;
               },
@@ -178,8 +179,8 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
             if (parliament != null)
               AsyncDropdownSelector<Assembly>(
                 showSubtitle: false,
-                hintText: "Assembly",
-                subTitle: "Select Assembly",
+                hintText: "assembly".tr(),
+                subTitle: "select_assembly".tr(),
                 suffixIconColor: AppColors.textFieldColor,
                 itemsProvider: assemblyProvider(parliament!.parliamentId),
                 textEditingController: assemblyTFController,
@@ -223,7 +224,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                 },
                 validator: (value) {
                   if (value == "Assembly" || value?.isEmpty == true) {
-                    return "Please select Assembly";
+                    return "select_assembly".tr();
                   }
                   return null;
                 },
@@ -265,15 +266,15 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                           showDialog(
                               context: context,
                               builder: (context) => ErrorDialog(
-                                  title: "somthing went wrong",
-                                  message: "can't sign up"));
+                                  title: "signup_failed".tr(),
+                                  message: "signup_failed".tr()));
                         }
                       }, onError: (error, stackTrace) {
                         EasyLoading.dismiss();
                         showDialog(
                             context: context,
                             builder: (context) => ErrorDialog(
-                                title: "somthing went wrong",
+                                title: "signup_failed".tr(),
                                 message: error.toString()));
                       }).whenComplete(() {
                         EasyLoading.dismiss();
@@ -281,7 +282,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                     }
                   : null,
               child: Text(
-                "Finish",
+                "finish".tr(),
                 style: TextStyle(color: Colors.white),
               ),
             ),
@@ -305,7 +306,7 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
                 Icon(Icons.check_circle, color: Colors.green, size: 50),
                 SizedBox(height: 10),
                 Text(
-                  "Signup Successful!",
+                  "signup_successful".tr(),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],

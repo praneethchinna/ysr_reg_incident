@@ -1,22 +1,16 @@
-import 'dart:io';
-
-import 'package:chewie/chewie.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:insta_image_viewer/insta_image_viewer.dart';
 import 'package:intl/intl.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:video_player/video_player.dart';
 import 'package:ysr_reg_incident/app_colors/app_colors.dart';
-import 'package:ysr_reg_incident/feature/incident_history/model/incident_details_model.dart';
 import 'package:ysr_reg_incident/feature/incident_history/model/incident_history_model.dart';
 import 'package:ysr_reg_incident/feature/incident_history/provider/incident_history_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_history/widgets/show_files.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/build_information_row.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_text_widget.dart';
+import 'package:ysr_reg_incident/utils/language_equivalent_key.dart';
 
 class IncidentHistoryPage extends ConsumerWidget {
   const IncidentHistoryPage({super.key});
@@ -38,11 +32,11 @@ class IncidentHistoryPage extends ConsumerWidget {
         body: incidentHistoryAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) => Center(
-            child: Text('Error: ${error.toString()}'),
+            child: Text('${'error'.tr()}: ${error.toString()}'),
           ),
           data: (incidents) {
             if (incidents.isEmpty) {
-              return const Center(child: Text('No incidents found'));
+              return Center(child: Text('no_incidents_found'.tr()));
             }
             return ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -99,6 +93,21 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
     }
   }
 
+  String _getLanguageCode(String status) {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return 'open'.tr();
+      case 'declined':
+        return 'declined'.tr();
+      case 'pending':
+        return 'pending'.tr();
+      case 'recorded':
+        return 'recorded'.tr();
+      default:
+        return status;
+    }
+  }
+
   void _toggleExpand() {
     setState(() {
       isExpanded = !isExpanded;
@@ -128,7 +137,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
 
                 return Step(
                   title: Text(
-                    historyItem.status,
+                    _getLanguageCode(historyItem.status),
                     style: const TextStyle(fontSize: 12),
                   ),
                   subtitle: Column(
@@ -250,7 +259,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                         ),
                       ),
                       child: Text(
-                        widget.incident.status,
+                        _getLanguageCode(widget.incident.status),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -262,7 +271,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                 ),
                 const Gap(8),
                 Text(
-                  widget.incident.incidentType,
+                  equivalentKey(widget.incident.incidentType),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -354,9 +363,9 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                       fontWeight: FontWeight.w400,
                       fontSize: 16,
                     ),
-                    tabs: const [
-                      Tab(text: 'Incident Information'),
-                      Tab(text: 'Incident Updates'),
+                    tabs: [
+                      Tab(text: 'incident_info'.tr()),
+                      Tab(text: 'incident_updates'.tr()),
                     ],
                   ),
                 ),
@@ -374,7 +383,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            RegTextWidget(text: "Personal Information"),
+                            RegTextWidget(text: 'personal_information'.tr()),
                             Gap(8),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -388,28 +397,28 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                               child: Column(
                                 children: [
                                   buildInformationRow(
-                                      title: 'Name',
+                                      title: 'name'.tr(),
                                       value: incidentDetails.name),
                                   buildInformationRow(
-                                      title: 'Gender',
+                                      title: 'gender'.tr(),
                                       value: incidentDetails.gender),
                                   buildInformationRow(
-                                      title: 'Phone Number',
+                                      title: 'phone_no'.tr(),
                                       value: incidentDetails.mobile),
                                   buildInformationRow(
-                                      title: 'Email ID',
+                                      title: 'email_id'.tr(),
                                       value: incidentDetails.email ?? 'N/A'),
                                   buildInformationRow(
-                                      title: 'Parliament',
+                                      title: 'parliament'.tr(),
                                       value: incidentDetails.parliament),
                                   buildInformationRow(
-                                      title: 'Assembly',
+                                      title: 'assembly'.tr(),
                                       value: incidentDetails.assembly),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 16),
-                            RegTextWidget(text: "Incident Information"),
+                            RegTextWidget(text: 'incident_info'.tr()),
                             Gap(8),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -423,19 +432,19 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                               child: Column(
                                 children: [
                                   buildInformationRow(
-                                      title: 'Incident Type',
+                                      title: 'incident_type'.tr(),
                                       value: incidentDetails.incidentType),
                                   buildInformationRow(
-                                      title: 'Incident Location',
+                                      title: 'incident_location'.tr(),
                                       value: incidentDetails.incidentPlace),
                                   buildInformationRow(
-                                      title: 'Incident Date',
+                                      title: 'incident_date'.tr(),
                                       value: incidentDetails.incidentDate),
                                   buildInformationRow(
-                                      title: 'Incident Time',
+                                      title: 'incident_time'.tr(),
                                       value: incidentDetails.incidentTime),
                                   buildInformationRow(
-                                      title: 'Description',
+                                      title: 'description'.tr(),
                                       value:
                                           incidentDetails.incidentDescription),
                                   ref
@@ -447,7 +456,8 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                                               return Column(
                                                 children: [
                                                   _buildFileSection(
-                                                      'Incident Proofs', urls),
+                                                      'incident_proof'.tr(),
+                                                      urls),
                                                 ],
                                               );
                                             }
@@ -571,66 +581,6 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
       ],
     );
   }
-
-  // void _showDialog(BuildContext context, String url) {
-  //   final isVideo = _isVideo(url);
-  //   final isAudio = _isAudio(url);
-  //
-  //   showDialog(
-  //     context: context,
-  //     builder: (_) {
-  //       return AlertDialog(
-  //         contentPadding: const EdgeInsets.all(8),
-  //         content: SizedBox(
-  //           width: 300,
-  //           height: 300,
-  //           child: isVideo
-  //               ? Chewie(
-  //                   controller: ChewieController(
-  //                       videoPlayerController:
-  //                           VideoPlayerController.network(url),
-  //                       autoPlay: true,
-  //                       looping: false,
-  //                       allowFullScreen: true,fullScreenByDefault: true,
-  //                       deviceOrientationsAfterFullScreen: [
-  //                         DeviceOrientation.portraitUp,
-  //                         DeviceOrientation.portraitDown,
-  //                       ],
-  //                       deviceOrientationsOnEnterFullScreen: [
-  //                         DeviceOrientation.landscapeLeft,
-  //                         DeviceOrientation.landscapeRight,
-  //                       ]),
-  //                 )
-  //               : isAudio
-  //                   ? _buildAudioPlayer(url)
-  //                   : InstaImageViewer(
-  //                       child: Image.network(
-  //                         url,
-  //                         height: 150,
-  //                         width: double.infinity,
-  //                         fit: BoxFit.contain,
-  //                         loadingBuilder: (context, child, loadingProgress) {
-  //                           if (loadingProgress == null) return child;
-  //                           return SizedBox(
-  //                             height: 150,
-  //                             child: Center(
-  //                               child: CircularProgressIndicator.adaptive(
-  //                                 value: loadingProgress.expectedTotalBytes !=
-  //                                         null
-  //                                     ? loadingProgress.cumulativeBytesLoaded /
-  //                                         loadingProgress.expectedTotalBytes!
-  //                                     : null,
-  //                               ),
-  //                             ),
-  //                           );
-  //                         },
-  //                       ),
-  //                     ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 
   bool _isVideo(String url) =>
       url.endsWith('.mp4') ||

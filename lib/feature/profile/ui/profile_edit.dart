@@ -1,11 +1,10 @@
-/* <<<<<<<<<<<<<<  ✨ Windsurf Command 🌟 >>>>>>>>>>>>>>>> */
 import 'dart:convert';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_app_bar.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
 import 'package:ysr_reg_incident/feature/profile/provider/profile_provider.dart';
@@ -136,7 +135,7 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
         appBar: RegAppBar(
           centerTitle: true,
           title: Text(
-            'Profile Edit',
+            'profile_edit'.tr(),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -159,11 +158,11 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           buildDetailsTextField(
-                            subTitleText: "name",
+                            subTitleText: "full_name".tr(),
                             controller: _nameController,
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return 'Please enter your name';
+                                return 'enter_your_name'.tr();
                               }
                               return null;
                             },
@@ -178,12 +177,12 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                               border: appBorder(),
                               enabledBorder: appEnabledBorder(),
                               focusedBorder: appBorder(),
-                              labelText: 'Gender',
+                              labelText: 'gender'.tr(),
                             ),
                             value: _genderController.text.isNotEmpty
                                 ? _genderController.text
                                 : null,
-                            items: ['Male', 'Female'].map((String gender) {
+                            items: ['male'.tr(), 'female'.tr()].map((String gender) {
                               return DropdownMenuItem<String>(
                                 value: gender,
                                 child: Text(gender),
@@ -196,14 +195,14 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                             },
                             validator: (String? value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please select your Gender';
+                                return 'select_your_gender'.tr();
                               }
                               return null;
                             },
                           ),
                           SizedBox(height: 20),
                           buildDetailsTextField(
-                            subTitleText: 'email',
+                            subTitleText: "email".tr(),
                             controller: _emailController,
                             validator: (value) {
                               if (value!.isEmpty || !value.contains('@')) {
@@ -215,7 +214,7 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                           SizedBox(height: 20),
 
                           buildDetailsTextField(
-                            subTitleText: 'country',
+                            subTitleText: "country".tr(),
                             controller: _countryController,
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -226,7 +225,7 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                           ),
                           SizedBox(height: 20),
                           buildDetailsTextField(
-                            subTitleText: 'state',
+                            subTitleText: "state".tr(),
                             controller: _stateController,
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -244,8 +243,8 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                             suffixIconColor: Colors.green,
                             border: appBorder(),
                             enabledBorder: appEnabledBorder(),
-                            hintText: "Parliament",
-                            subTitle: "Select Parliament",
+                            hintText: "parliament".tr(),
+                            subTitle: "select_parliament".tr(),
                             itemsProvider: parliamentProvider,
                             textEditingController: _parliamentController,
                             itemBuilder: (itemContext, entity, isSelected) {
@@ -290,7 +289,7 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                             border: appBorder(),
                             enabledBorder: appEnabledBorder(),
                             hintText: "Assembly",
-                            subTitle: "Select Assembly",
+                            subTitle: "select_assembly".tr(),
                             itemsProvider: assemblyProvider(parliamentId),
                             textEditingController: _constituencyController,
                             itemBuilder: (itemContext, entity, isSelected) {
@@ -338,7 +337,7 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                           // ),
                           SizedBox(height: 20),
                           RegButton(
-                            child: Text("Save"),
+                            child: Text('save'.tr()),
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 EasyLoading.show();

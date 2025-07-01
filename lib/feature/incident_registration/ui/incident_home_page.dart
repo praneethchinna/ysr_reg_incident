@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -11,7 +12,6 @@ import 'package:ysr_reg_incident/feature/profile/ui/profile_ui.dart';
 
 import '../../incident_history/ui/incident_history_page.dart';
 
-
 final tabIndexProvider = StateProvider<int>((ref) => 0);
 
 final class IncidentHomePage extends ConsumerStatefulWidget {
@@ -22,14 +22,14 @@ final class IncidentHomePage extends ConsumerStatefulWidget {
 }
 
 class _RegisterIncidentPageState extends ConsumerState<IncidentHomePage> {
-
-  final _indexStack=[
+  final _indexStack = [
     RegisterIncidentPage(),
     IncidentHistoryPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    context.locale;
     final tabIndex = ref.watch(tabIndexProvider);
     return Scaffold(
       appBar: RegAppBar(
@@ -57,8 +57,8 @@ class _RegisterIncidentPageState extends ConsumerState<IncidentHomePage> {
         elevation: 0,
         title: Text(
           ref.watch(tabIndexProvider) == 0
-              ? 'Register Incident'
-              : 'Incident History',
+              ? 'register_incident'.tr()
+              : 'incident_history'.tr(),
           style: TextStyle(
             color: Colors.white,
           ),
@@ -90,12 +90,12 @@ class _RegisterIncidentPageState extends ConsumerState<IncidentHomePage> {
             selectedLabelStyle:
                 TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             currentIndex: ref.watch(tabIndexProvider),
-            items: const [
+            items: [
               BottomNavigationBarItem(
                   icon: Icon(Icons.app_registration),
-                  label: 'Register Incident'),
+                  label: 'register_incident'.tr()),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.person), label: 'Incident History'),
+                  icon: Icon(Icons.person), label: 'incident_history'.tr()),
             ],
             onTap: (index) {
               ref.read(tabIndexProvider.notifier).state = index;

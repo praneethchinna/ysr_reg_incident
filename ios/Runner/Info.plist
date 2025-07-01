@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.227479719032-jmvc7i36to8qvk7oev6ipcora9hn3vds</string>
+    </array>
+  </dict>
+</array>
+
+
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to pick media files.</string>
 	<key>NSMicrophoneUsageDescription</key>
@@ -57,5 +70,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	    <key>GIDClientID</key>
+        <string>227479719032-jmvc7i36to8qvk7oev6ipcora9hn3vds.apps.googleusercontent.com</string>
 </dict>
 </plist>

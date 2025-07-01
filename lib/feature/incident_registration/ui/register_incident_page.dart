@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:ysr_reg_incident/feature/incident_history/provider/incident_history_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/provider/incident_registration_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/repo/incident_registration_data.dart';
@@ -17,6 +19,7 @@ import 'package:ysr_reg_incident/feature/incident_registration/widgets/build_inf
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_text_widget.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
+import 'package:ysr_reg_incident/utils/language_equivalent_key.dart';
 
 class RegisterIncidentPage extends ConsumerStatefulWidget {
   const RegisterIncidentPage({super.key});
@@ -45,12 +48,134 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
     super.dispose();
   }
 
+  Widget _buildButton(
+      {bool isSelected = false,
+      required String title,
+      required VoidCallback onPress}) {
+    return InkWell(
+      onTap: onPress,
+      child: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.deepPurple : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.deepPurple : Colors.grey.shade400,
+            width: 1.5,
+          ),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    context.locale;
     final incidentState = ref.watch(incidentNotifierProvider);
     final notifier = ref.read(incidentNotifierProvider.notifier);
     return incidentState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Skeletonizer(
+              enabled: true,
+              child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  hintText: 'Current Incident',
+                                ),
+                              ),
+                            ),
+                            Gap(10),
+                            Expanded(
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  hintText: 'Past Incident',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Gap(20),
+                        Text('Complaint Info'),
+                        Gap(20),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Select Incident',
+                          ),
+                        ),
+                        Gap(15),
+                        Text('Incident Location'),
+                        Gap(5),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Enter Location',
+                          ),
+                        ),
+                        Gap(15),
+                        Text('Incident Date'),
+                        Gap(5),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Select Date',
+                            prefixIcon: Icon(Icons.calendar_month),
+                          ),
+                        ),
+                        Gap(15),
+                        Text('Incident Time'),
+                        Gap(5),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Select Time',
+                            prefixIcon: Icon(Icons.access_time_outlined),
+                          ),
+                        ),
+                        Gap(15),
+                        Text('Incident Description'),
+                        Gap(5),
+                        TextFormField(
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText: 'Describe the incident...',
+                          ),
+                        ),
+                        Gap(15),
+                        Text('Incident Time'),
+                        Gap(5),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Select Time',
+                            prefixIcon: Icon(Icons.access_time_outlined),
+                          ),
+                        ),
+                        Gap(15),
+                        Text('Incident Description'),
+                        Gap(5),
+                        TextFormField(
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText: 'Describe the incident...',
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+            ),
         error: (error, stack) => Center(child: Text(error.toString())),
         data: (incidentState) {
           if (_locationController.text != incidentState.location) {
@@ -91,7 +216,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
             currentStep: stepCount - 1,
             steps: [
               Step(
-                label: Text("Incident Information"),
+                label: Text('incident_info'.tr()),
                 state: stepCount > 1 ? StepState.complete : StepState.editing,
                 isActive: stepCount >= 1,
                 title: const Text(''),
@@ -100,15 +225,37 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildButton(
+                                onPress: () {
+                                  notifier.updateIsCurrentIncident(true);
+                                },
+                                title: "Current Incident",
+                                isSelected: incidentState.isCurrentIncident),
+                          ),
+                          Gap(10),
+                          Expanded(
+                            child: _buildButton(
+                                onPress: () {
+                                  notifier.updateIsCurrentIncident(false);
+                                },
+                                title: "Past Incident",
+                                isSelected: !incidentState.isCurrentIncident),
+                          ),
+                        ],
+                      ),
+                      Gap(20),
                       Text(
-                        'Complaint Information',
+                        'complaint_info'.tr(),
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                       Gap(20),
                       ...[
                         RegTextWidget(
-                          text: 'Incident Type',
+                          text: 'incident_type'.tr(),
                         ),
                         Gap(5),
                         DropdownButtonFormField<String>(
@@ -116,14 +263,14 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                               ? null
                               : incidentState.incidentType,
                           hint: Text(
-                            'Select incident Type',
+                            'select_incident'.tr(),
                             style: TextStyle(
                                 color: Colors.grey.shade600, fontSize: 16),
                           ),
                           items: incidentState.incidentTypes.map((type) {
                             return DropdownMenuItem(
                               value: type.name,
-                              child: Text(type.name),
+                              child: Text(equivalentKey(type.name)),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -132,7 +279,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                             }
                           },
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Please select an incident type'
+                              ? 'pls_select_incident'.tr()
                               : null,
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -144,7 +291,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                       Gap(15),
                       ...[
                         RegTextWidget(
-                          text: 'Incident Location',
+                          text: 'incident_location'.tr(),
                         ),
                         Gap(5),
                         TextFormField(
@@ -153,17 +300,17 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                           },
                           controller: _locationController,
                           decoration: InputDecoration(
-                            hintText: "Enter Location",
+                            hintText: 'enter_location'.tr(),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Please enter a location'
+                              ? 'pls_enter_location'.tr()
                               : null,
                         )
                       ],
                       Gap(15),
-                      ...[
+                      if (!incidentState.isCurrentIncident) ...[
                         RegTextWidget(
-                          text: 'Incident Date',
+                          text: 'incident_date'.tr(),
                         ),
                         Gap(5),
                         TextFormField(
@@ -188,17 +335,17 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                   });
                                 },
                                 child: Icon(Icons.calendar_month)),
-                            hintText: "Select Date",
+                            hintText: 'incident_date'.tr(),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Please select a date'
+                              ? 'pls_enter_location'.tr()
                               : null,
                         )
                       ],
                       Gap(15),
-                      ...[
+                      if (!incidentState.isCurrentIncident) ...[
                         RegTextWidget(
-                          text: 'Incident Time',
+                          text: 'incident_time'.tr(),
                         ),
                         Gap(5),
                         TextFormField(
@@ -222,17 +369,17 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                   });
                                 },
                                 child: Icon(Icons.access_time_outlined)),
-                            hintText: "Select Time",
+                            hintText: 'incident_time'.tr(),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Please select a time'
+                              ? 'pls_enter_location'.tr()
                               : null,
                         )
                       ],
                       Gap(15),
                       ...[
                         RegTextWidget(
-                          text: 'Incident Description',
+                          text: 'incident_desc'.tr(),
                         ),
                         Gap(5),
                         TextFormField(
@@ -243,12 +390,12 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                           },
                           controller: _descriptionController,
                           decoration: InputDecoration(
-                            hintText: "Enter Description",
+                            hintText: 'enter_desc'.tr(),
                             contentPadding:
                                 EdgeInsets.only(top: 20, left: 12, right: 12),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Please enter a description'
+                              ? 'pls_enter_desc'.tr()
                               : null,
                         )
                       ],
@@ -269,7 +416,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                             ),
                             child: Column(
                               children: [
-                                Text("10.0 MB Max File Size",
+                                Text('max_file_size'.tr(),
                                     style: TextStyle(color: Colors.grey)),
                                 SizedBox(height: 10),
                                 OutlinedButton.icon(
@@ -298,8 +445,8 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           SnackBar(
-                                              content:
-                                                  Text('Max 3 files allowed')),
+                                              content: Text(
+                                                  'max_files_allowed'.tr())),
                                         );
                                         return;
                                       }
@@ -310,10 +457,10 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                   icon: Icon(
                                     Icons.upload,
                                   ),
-                                  label: Text("Upload Media"),
+                                  label: Text('upload_media'.tr()),
                                 ),
                                 SizedBox(height: 10),
-                                Text("Image/Video/Audio",
+                                Text('img_vid_aud'.tr(),
                                     style:
                                         TextStyle(fontWeight: FontWeight.w500)),
                               ],
@@ -338,7 +485,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                 if (incidentState.images.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                        content: Text('Please upload images')),
+                                        content: Text('upload_images'.tr())),
                                   );
                                   return;
                                 }
@@ -349,7 +496,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(200, 40),
                             ),
-                            child: const Text('Next'),
+                            child: Text('next'.tr()),
                           ),
                         ],
                       ),
@@ -358,7 +505,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                 ),
               ),
               Step(
-                  label: Text("Preview & Submit"),
+                  label: Text('preview_submit'.tr()),
                   state: stepCount > 2 ? StepState.complete : StepState.editing,
                   isActive: stepCount >= 2,
                   title: const Text(''),
@@ -373,18 +520,18 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                       ),
                       Gap(20),
                       Text(
-                        'Almost Done 🚀',
+                        'almost_done'.tr(),
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                       Text(
-                        "Please review the information on this page for accuracy and completeness before proceeding. Verify all details are entered are correct ",
+                        'please_review'.tr(),
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w400),
                       ),
                       Gap(10),
                       RegTextWidget(
-                        text: 'Personal Information',
+                        text: 'personal_info'.tr(),
                       ),
                       Container(
                         padding: const EdgeInsets.all(10),
@@ -398,29 +545,29 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             buildInformationRow(
-                                title: "Name",
+                                title: 'name'.tr(),
                                 value: ref.read(loginResponseProvider)!.name),
                             buildInformationRow(
-                                title: "Gender",
+                                title: 'gender'.tr(),
                                 value: ref.read(loginResponseProvider)!.gender),
                             buildInformationRow(
-                                title: "Phone Number",
+                                title: 'phone_no'.tr(),
                                 value: ref.read(loginResponseProvider)!.mobile),
                             buildInformationRow(
-                                title: "Email ID",
+                                title: 'email_id'.tr(),
                                 value: ref
                                         .read(loginResponseProvider)!
                                         .email
                                         .isEmpty
-                                    ? 'N/A'
+                                    ? 'not_available'.tr()
                                     : ref.read(loginResponseProvider)!.email),
                             buildInformationRow(
-                                title: "Parliament",
+                                title: 'parliament'.tr(),
                                 value: ref
                                     .read(loginResponseProvider)!
                                     .parliament),
                             buildInformationRow(
-                                title: "Constituency",
+                                title: 'constituency'.tr(),
                                 value: ref
                                     .read(loginResponseProvider)!
                                     .constituency),
@@ -455,29 +602,29 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             buildInformationRow(
-                                title: "Incident Type",
+                                title: 'incident_type'.tr(),
                                 value: incidentState.incidentType.isEmpty
-                                    ? 'Select incident Type'
+                                    ? 'select_incident'.tr()
                                     : incidentState.incidentType),
                             buildInformationRow(
-                                title: "Location",
+                                title: 'location'.tr(),
                                 value: incidentState.location.isEmpty
-                                    ? 'Select location'
+                                    ? 'select_location'.tr()
                                     : incidentState.location),
                             buildInformationRow(
-                                title: "Incident Date",
+                                title: 'incident_date'.tr(),
                                 value: incidentState.incidentDate.isEmpty
-                                    ? 'Select incident Date'
+                                    ? 'select_incident_date'.tr()
                                     : incidentState.incidentDate),
                             buildInformationRow(
-                                title: "Incident Time",
+                                title: 'incident_time'.tr(),
                                 value: incidentState.incidentTime.isEmpty
-                                    ? 'Select incident Time'
+                                    ? 'select_incident_time'.tr()
                                     : incidentState.incidentTime),
                             buildInformationRow(
-                                title: "Incident Description",
+                                title: 'incident_desc'.tr(),
                                 value: incidentState.description.isEmpty
-                                    ? 'Enter incident description'
+                                    ? 'enter_incident_desc'.tr()
                                     : incidentState.description),
                             if (incidentState.images.isNotEmpty) ...[
                               Gap(5),
@@ -485,7 +632,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                 children: [
                                   Expanded(
                                     flex: 4,
-                                    child: Text("Incident Images",
+                                    child: Text('incident_images'.tr(),
                                         style: TextStyle(
                                             fontWeight: FontWeight.w400,
                                             fontSize: 14)),
@@ -606,8 +753,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                               }),
                           Gap(5),
                           Expanded(
-                            child: Text(
-                                "By submitting this form, I confirm that the details provided are true to the best of my knowledge. I agree to the Terms and Conditions and give consent for my information to be verified for necessary action",
+                            child: Text("terms_submit".tr(),
                                 style: TextStyle(
                                     fontWeight: FontWeight.w300, fontSize: 13)),
                           ),
