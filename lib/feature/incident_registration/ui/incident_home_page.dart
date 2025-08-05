@@ -41,17 +41,16 @@ class _RegisterIncidentPageState extends ConsumerState<IncidentHomePage> {
         ),
         actions: [
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => UserProfileUI()),
-              );
-            },
-            child: Image.asset(
-              "assets/profile.png",
-              width: 35,
-              height: 35,
-            ),
-          ),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => UserProfileUI()),
+                );
+              },
+              child: Icon(
+                Icons.language_sharp,
+                size: 24,
+                color: Colors.white,
+              )),
           Gap(10),
         ],
         elevation: 0,

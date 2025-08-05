@@ -10,6 +10,7 @@ import 'package:ysr_reg_incident/feature/signup/models/assembly.dart';
 import 'package:ysr_reg_incident/feature/signup/models/parliament.dart';
 import 'package:ysr_reg_incident/feature/signup/repo/data.dart';
 import 'package:ysr_reg_incident/feature/signup/ui/signup_screen.dart';
+import 'package:ysr_reg_incident/main.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
 import 'package:ysr_reg_incident/utils/country_state_response_model.dart';
 import 'package:ysr_reg_incident/utils/generic_dropdown_selector.dart';
@@ -329,7 +330,14 @@ class _SelectLocationScreenState extends ConsumerState<SelectLocationScreen> {
 final parliamentProvider =
     FutureProvider.autoDispose<List<Parliament>>((ref) async {
   final dio = ref.read(dioProvider);
-  final response = await dio.get<List<dynamic>>('/parliaments');
+  String queryParam = "";
+  if (ref.watch(localeProvider).languageCode == "en") {
+    queryParam = "parliaments";
+  } else {
+    queryParam = "parliaments-te?lang=te";
+  }
+
+  final response = await dio.get<List<dynamic>>('/$queryParam');
   if (response.statusCode == 200) {
     if (response.data == null || (response.data as List).isEmpty) {
       return [];
@@ -343,8 +351,14 @@ final parliamentProvider =
 final assemblyProvider =
     FutureProvider.autoDispose.family<List<Assembly>, int>((ref, id) async {
   final dio = ref.read(dioProvider);
+  String queryParam = "";
+  if (ref.watch(localeProvider).languageCode == "en") {
+    queryParam = "assemblies?parliament_id=$id";
+  } else {
+    queryParam = "assemblies-te?parliament_id=$id&lang=te";
+  }
   final response =
-      await dio.get<List<dynamic>>('/assemblies?parliament_id=$id');
+      await dio.get<List<dynamic>>('/$queryParam');
   if (response.statusCode == 200) {
     if (response.data == null || (response.data as List).isEmpty) {
       return [];
@@ -354,3 +368,5 @@ final assemblyProvider =
     return throw Exception("Failed fetch Assembly");
   }
 });
+
+

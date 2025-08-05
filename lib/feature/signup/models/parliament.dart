@@ -13,7 +13,7 @@ class Parliament {
   factory Parliament.fromJson(Map<String, dynamic> json) {
     return Parliament(
       parliamentName: json['parliament_name'],
-      regionalId: json['regional_id'],
+      regionalId: json['regional_id']??0,
       parliamentId: json['parliament_id'],
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:geocoding/geocoding.dart';
@@ -6,6 +7,11 @@ import 'package:intl/intl.dart';
 import 'package:location/location.dart' as loc;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/repo/incident_registration_data.dart';
+import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
+import 'package:ysr_reg_incident/feature/signup/models/assembly.dart';
+import 'package:ysr_reg_incident/feature/signup/models/parliament.dart';
+import 'package:ysr_reg_incident/feature/signup/ui/signup_screen_two.dart';
+import 'package:ysr_reg_incident/main.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
 part 'incident_registration_provider.g.dart';
 
@@ -26,10 +32,12 @@ class IncidentTypes {
 class IncidentNotifier extends _$IncidentNotifier {
   @override
   Future<IncidentState> build() async {
+    final userData = ref.read(loginResponseProvider);
+
     IncidentRegistrationData incidentRegistrationData =
         IncidentRegistrationData(ref.read(dioProvider));
-    final incidentTypes =
-        await incidentRegistrationData.getIncidentCategories();
+    final incidentTypes = await incidentRegistrationData
+        .getIncidentCategories(ref.watch(localeProvider).languageCode);
 
     final DateTime now = DateTime.now();
     final String incidentDate = DateFormat('dd MMMM, yyyy').format(now);
@@ -44,7 +52,27 @@ class IncidentNotifier extends _$IncidentNotifier {
       incidentDate: incidentDate,
       incidentTime: incidentTime,
       images: [],
+      name: userData?.name ?? "",
+      parliament: Parliament(
+          parliamentName: userData?.parliament ?? "",
+          regionalId: 0,
+          parliamentId: 0),
+      constituency: Assembly(
+          assemblyName: userData?.constituency ?? "",
+          assemblyId: 0,
+          parliamentId: 0,
+          regionalId: 0),
+      mandal: userData?.mandalName ?? "",
+      village: userData?.villageName ?? "",
     );
+  }
+
+  Future<void> updateParliament(Parliament value) async {
+    _updateState(state.value?.copyWith(parliament: value));
+  }
+
+  Future<void> updateConstituency(Assembly value) async {
+    _updateState(state.value?.copyWith(constituency: value));
   }
 
   Future<String> getLocationAndAddress(loc.Location location) async {
@@ -88,6 +116,14 @@ class IncidentNotifier extends _$IncidentNotifier {
     }
   }
 
+  void updateIncidentExplanationFile(File? incidentExplanationFile) {
+    if (incidentExplanationFile == null) {
+      state = AsyncValue.data(state.value!.copyWithExceptIncidentExplanation());
+    }
+    _updateState(
+        state.value?.copyWith(incidentExplanation: incidentExplanationFile));
+  }
+
   void updateIsCurrentIncident(bool isCurrentIncident) {
     _updateState(state.value?.copyWith(
         isCurrentIncident: isCurrentIncident,
@@ -97,6 +133,15 @@ class IncidentNotifier extends _$IncidentNotifier {
         incidentTime: isCurrentIncident
             ? DateFormat('h:mm a').format(DateTime.now())
             : ""));
+  }
+
+  void updateComplaineeDesignation(String complaineeDesignation) {
+    _updateState(
+        state.value?.copyWith(complaineeDesignation: complaineeDesignation));
+  }
+
+  void updateMandal(String mandal) {
+    _updateState(state.value?.copyWith(mandal: mandal));
   }
 
   void updateStep(int newStep) {
@@ -111,8 +156,8 @@ class IncidentNotifier extends _$IncidentNotifier {
     IncidentRegistrationData incidentRegistrationData =
         IncidentRegistrationData(ref.read(dioProvider));
 
-    final incidentTypes =
-        await incidentRegistrationData.getIncidentCategories();
+    final incidentTypes = await incidentRegistrationData
+        .getIncidentCategories(ref.watch(localeProvider).languageCode);
 
     final DateTime now = DateTime.now();
     final String incidentDate = DateFormat('dd MMMM, yyyy').format(now);
@@ -130,6 +175,26 @@ class IncidentNotifier extends _$IncidentNotifier {
         images: [],
       ),
     );
+  }
+
+  void updateName(String newName) {
+    _updateState(state.value?.copyWith(name: newName));
+  }
+
+  void updateVillage(String newVillage) {
+    _updateState(state.value?.copyWith(village: newVillage));
+  }
+
+  void updateComplainantName(String newComplainantName) {
+    _updateState(state.value?.copyWith(complaineeName: newComplainantName));
+  }
+
+  Future<void> getIncidentTypes() async {
+    IncidentRegistrationData incidentRegistrationData =
+        IncidentRegistrationData(ref.read(dioProvider));
+    final incidentTypes = await incidentRegistrationData
+        .getIncidentCategories(ref.watch(localeProvider).languageCode);
+    _updateState(state.value?.copyWith(incidentTypes: incidentTypes));
   }
 
   void updateIncidentType(String newType) {
@@ -179,22 +244,38 @@ class IncidentState {
   final String incidentDate;
   final String incidentTime;
   final List<PlatformFile> images;
+  final String name;
   final bool agreed;
   final int step;
   final bool isCurrentIncident;
+  final String village;
+  final Parliament? parliament;
+  final Assembly? constituency;
+  final String mandal;
+  final String complaineeName;
+  final String complaineeDesignation;
+  final File? incidentExplanation;
 
-  IncidentState(
-      {required this.incidentType,
-      required this.description,
-      required this.location,
-      required this.incidentTypes,
-      this.incidentDate = '',
-      this.incidentTime = '',
-      this.agreed = false,
-      this.step = 1,
-      this.isCurrentIncident = true,
-      this.images = const []});
-
+  IncidentState({
+    required this.incidentType,
+    required this.description,
+    required this.location,
+    required this.incidentTypes,
+    this.incidentDate = '',
+    this.incidentTime = '',
+    this.agreed = false,
+    this.step = 1,
+    this.isCurrentIncident = true,
+    this.village = '',
+    this.images = const [],
+    this.parliament,
+    this.constituency,
+    this.mandal = '',
+    this.complaineeName = '',
+    this.complaineeDesignation = '',
+    this.incidentExplanation,
+    this.name = "",
+  });
   IncidentState copyWith({
     List<IncidentTypes>? incidentTypes,
     String? incidentType,
@@ -206,16 +287,55 @@ class IncidentState {
     bool? agreed,
     bool? isCurrentIncident,
     int? step,
+    String? village,
+    Parliament? parliament,
+    Assembly? constituency,
+    String? mandal,
+    String? complaineeName,
+    String? complaineeDesignation,
+    File? incidentExplanation,
+    String? name,
   }) =>
       IncidentState(
-          incidentTypes: incidentTypes ?? this.incidentTypes,
-          incidentType: incidentType ?? this.incidentType,
-          description: description ?? this.description,
-          location: location ?? this.location,
-          incidentDate: incidentDate ?? this.incidentDate,
-          incidentTime: incidentTime ?? this.incidentTime,
-          images: images ?? this.images,
-          agreed: agreed ?? this.agreed,
-          isCurrentIncident: isCurrentIncident ?? this.isCurrentIncident,
-          step: step ?? this.step);
+        incidentTypes: incidentTypes ?? this.incidentTypes,
+        incidentType: incidentType ?? this.incidentType,
+        description: description ?? this.description,
+        location: location ?? this.location,
+        incidentDate: incidentDate ?? this.incidentDate,
+        incidentTime: incidentTime ?? this.incidentTime,
+        images: images ?? this.images,
+        agreed: agreed ?? this.agreed,
+        isCurrentIncident: isCurrentIncident ?? this.isCurrentIncident,
+        step: step ?? this.step,
+        village: village ?? this.village,
+        parliament: parliament ?? this.parliament,
+        constituency: constituency ?? this.constituency,
+        mandal: mandal ?? this.mandal,
+        complaineeName: complaineeName ?? this.complaineeName,
+        complaineeDesignation:
+            complaineeDesignation ?? this.complaineeDesignation,
+        incidentExplanation: incidentExplanation ?? this.incidentExplanation,
+        name: name ?? this.name,
+      );
+
+  IncidentState copyWithExceptIncidentExplanation() => IncidentState(
+        incidentTypes: this.incidentTypes,
+        incidentType: this.incidentType,
+        description: this.description,
+        location: this.location,
+        incidentDate: this.incidentDate,
+        incidentTime: this.incidentTime,
+        images: this.images,
+        agreed: this.agreed,
+        isCurrentIncident: this.isCurrentIncident,
+        step: this.step,
+        village: this.village,
+        parliament: this.parliament,
+        constituency: this.constituency,
+        mandal: this.mandal,
+        complaineeName: this.complaineeName,
+        complaineeDesignation: this.complaineeDesignation,
+        incidentExplanation: null,
+        name: this.name,
+      );
 }

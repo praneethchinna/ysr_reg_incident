@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,19 @@ import 'package:ysr_reg_incident/feature/incident_history/widgets/audio_waveform
 void showFullDialog(BuildContext context, String url) {
   final isVideo = _isVideo(url);
   final isAudio = _isAudio(url);
+  final isPdf = _isPdf(url);
+
+  if (isPdf) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          body: SfPdfViewer.network(url),
+        ),
+      ),
+    );
+    return;
+  }
 
   if (isVideo) {
     _showVideoPage(context, url); // full screen for video
@@ -24,11 +38,11 @@ void showFullDialog(BuildContext context, String url) {
       return AlertDialog(
         contentPadding: const EdgeInsets.all(8),
         content: SizedBox(
-          width: 300,
-          height: 300,
-          child: isAudio
-              ? _AudioDialogPlayer(url: url)
-              : InstaImageViewer(
+            width: 300,
+            height: 300,
+            child: switch (true) {
+              _ when isAudio => _AudioDialogPlayer(url: url),
+              _ => InstaImageViewer(
                   child: Image.network(
                     url,
                     height: 150,
@@ -49,8 +63,8 @@ void showFullDialog(BuildContext context, String url) {
                       );
                     },
                   ),
-                ),
-        ),
+                )
+            }),
       );
     },
   );
@@ -161,6 +175,10 @@ bool _isVideo(String url) {
 
 bool _isAudio(String url) {
   return url.endsWith('.mp3') || url.contains('audio');
+}
+
+bool _isPdf(String url) {
+  return url.endsWith('.pdf') || url.contains('pdf');
 }
 
 class _AudioDialogPlayer extends StatefulWidget {

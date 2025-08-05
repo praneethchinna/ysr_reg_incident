@@ -221,7 +221,6 @@ class _LoginUiState extends ConsumerState<LoginUi> {
                           await signOut();
                           return LoginApi(ref.read(dioProvider))
                               .googleSigninIncident(token: value!);
-
                         }).then((value) async {
                           EasyLoading.dismiss();
                           if (value != null) {

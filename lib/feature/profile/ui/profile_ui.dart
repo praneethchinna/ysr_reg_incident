@@ -11,6 +11,8 @@ import 'package:ysr_reg_incident/feature/incident_registration/ui/register_incid
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_app_bar.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
 import 'package:ysr_reg_incident/feature/login/ui/login_ui.dart';
+import 'package:ysr_reg_incident/feature/login/ui/otp_screen1.dart';
+import 'package:ysr_reg_incident/feature/login/ui/validate_otp_screen.dart';
 import 'package:ysr_reg_incident/feature/profile/provider/profile_provider.dart';
 import 'package:ysr_reg_incident/feature/profile/ui/profile_edit.dart';
 import 'package:ysr_reg_incident/services/shared_preferences.dart';
@@ -31,45 +33,46 @@ class UserProfileUI extends ConsumerWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           centerTitle: true,
-          actions: [
-            GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => ProfileEdit()));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(MdiIcons.accountEdit),
-                ))
-          ],
+          // actions: [
+          //   GestureDetector(
+          //       onTap: () {
+          //         Navigator.push(context,
+          //             MaterialPageRoute(builder: (context) => ProfileEdit()));
+          //       },
+          //       child: Padding(
+          //         padding: const EdgeInsets.symmetric(horizontal: 10),
+          //         child: Icon(MdiIcons.accountEdit),
+          //       ))
+          // ],
         ),
-        body: profileData.when(
-            data: (value) {
-              final data = value;
-              return SingleChildScrollView(
+        body:
+        // profileData.when(
+        //     data: (value) {
+        //       final data = value;
+               SingleChildScrollView(
                 child: Column(
                   children: [
                     SizedBox(height: 20),
-                    Column(
-                      children: [
-                        Image.asset(
-                          'assets/profile.png',
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.contain,
-                        ),
-                        Gap(10),
-                        Text(
-                          data.name,
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black),
-                        ),
-                        Gap(10),
-                      ],
-                    ),
-                    Gap(10),
+                    // Column(
+                    //   children: [
+                    //     Image.asset(
+                    //       'assets/profile.png',
+                    //       width: 100,
+                    //       height: 100,
+                    //       fit: BoxFit.contain,
+                    //     ),
+                    //     Gap(10),
+                    //     Text(
+                    //       data.name,
+                    //       style: TextStyle(
+                    //           fontSize: 20,
+                    //           fontWeight: FontWeight.w600,
+                    //           color: Colors.black),
+                    //     ),
+                    //     Gap(10),
+                    //   ],
+                    // ),
+                    // Gap(10),
                     // Language Selector
                     LanguageSelector(showLabel: false),
                     Container(
@@ -106,48 +109,48 @@ class UserProfileUI extends ConsumerWidget {
                     ),
 
                     Gap(10),
-                    if (data.mobile.isNotEmpty) ...[
-                      ProfileCard(
-                        imagePath: 'assets/number_icon.png',
-                        title: "phone".tr(),
-                        value: data.mobile,
-                      ),
-                    ],
-                    if (data.email.isNotEmpty) ...[
-                      ProfileCard(
-                        imagePath: 'assets/email_icon.png',
-                        title: "email".tr(),
-                        value: data.email,
-                      ),
-                    ],
-                    if (data.gender.isNotEmpty) ...[
-                      ProfileCard(
-                        imagePath: 'assets/gender.png',
-                        title: "gender".tr(),
-                        value: data.gender,
-                      ),
-                    ],
-                    if (data.country.isNotEmpty) ...[
-                      ProfileCard(
-                        imagePath: 'assets/country_icon.png',
-                        title: "country".tr(),
-                        value: data.country,
-                      ),
-                    ],
-                    if (data.parliament.isNotEmpty) ...[
-                      ProfileCard(
-                        imagePath: 'assets/parliament_icon.png',
-                        title: "parliament".tr(),
-                        value: data.parliament,
-                      ),
-                    ],
-                    if (data.constituency.isNotEmpty) ...[
-                      ProfileCard(
-                        imagePath: 'assets/assembly_icon.png',
-                        title: "constituency".tr(),
-                        value: data.constituency,
-                      ),
-                    ],
+                    // if (data.mobile.isNotEmpty) ...[
+                    //   ProfileCard(
+                    //     imagePath: 'assets/number_icon.png',
+                    //     title: "phone".tr(),
+                    //     value: data.mobile,
+                    //   ),
+                    // ],
+                    // if (data.email.isNotEmpty) ...[
+                    //   ProfileCard(
+                    //     imagePath: 'assets/email_icon.png',
+                    //     title: "email".tr(),
+                    //     value: data.email,
+                    //   ),
+                    // ],
+                    // if (data.gender.isNotEmpty) ...[
+                    //   ProfileCard(
+                    //     imagePath: 'assets/gender.png',
+                    //     title: "gender".tr(),
+                    //     value: data.gender,
+                    //   ),
+                    // ],
+                    // if (data.country.isNotEmpty) ...[
+                    //   ProfileCard(
+                    //     imagePath: 'assets/country_icon.png',
+                    //     title: "country".tr(),
+                    //     value: data.country,
+                    //   ),
+                    // ],
+                    // if (data.parliament.isNotEmpty) ...[
+                    //   ProfileCard(
+                    //     imagePath: 'assets/parliament_icon.png',
+                    //     title: "parliament".tr(),
+                    //     value: data.parliament,
+                    //   ),
+                    // ],
+                    // if (data.constituency.isNotEmpty) ...[
+                    //   ProfileCard(
+                    //     imagePath: 'assets/assembly_icon.png',
+                    //     title: "constituency".tr(),
+                    //     value: data.constituency,
+                    //   ),
+                    // ],
 
                     SizedBox(height: 30),
                     RegButton(
@@ -159,13 +162,14 @@ class UserProfileUI extends ConsumerWidget {
                           final sharedPreferences =
                               await ref.read(sharedPreferencesProvider.future);
                           await sharedPreferences.setString("userData", "");
+                          ref.read(mobileNumberProvider.notifier).state = "";
 
                           ref.invalidate(profileIncidentProvider);
 
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const LoginUi(),
+                              builder: (context) => OtpScreen1(),
                             ),
                             (Route<dynamic> route) => false,
                           );
@@ -173,16 +177,17 @@ class UserProfileUI extends ConsumerWidget {
                     Gap(20)
                   ],
                 ),
-              );
-            },
-            error: (error, stack) {
-              return Center(
-                child: Text(error.toString()),
-              );
-            },
-            loading: () => Center(
-                  child: CircularProgressIndicator.adaptive(),
-                )));
+              )
+            // },
+            // error: (error, stack) {
+            //   return Center(
+            //     child: Text(error.toString()),
+            //   );
+            // },
+            // loading: () => Center(
+            //       child: CircularProgressIndicator.adaptive(),
+            //     ))
+    );
   }
 }
 

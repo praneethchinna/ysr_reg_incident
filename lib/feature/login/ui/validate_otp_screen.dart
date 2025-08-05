@@ -1,15 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
 import 'package:ysr_reg_incident/feature/login/repo/forgot_password_repo.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
 import 'package:ysr_reg_incident/feature/login/ui/reset_password_page.dart';
+import 'package:ysr_reg_incident/feature/onboarding/screen_one.dart';
 import 'package:ysr_reg_incident/feature/signup/ui/signup_screen.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
+import 'package:ysr_reg_incident/services/shared_preferences.dart';
 import 'package:ysr_reg_incident/utils/reg_background_theme.dart';
 import 'package:ysr_reg_incident/utils/reg_buttons.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -210,8 +214,17 @@ class _OtpScreenState extends ConsumerState<ValidateOtpScreen> {
     EasyLoading.show();
     LoginApi(ref.read(dioProvider))
         .verifyOtpIncident(mobile: widget.number, otp: getOtpString())
-        .then((value) {
+        .then((value) async {
+      if (value == null) {
+        ref.read(mobileNumberProvider.notifier).state = widget.number;
+        EasyLoading.dismiss();
+        showSuccessDialog(context);
+        return;
+      }
       ref.read(mobileNumberProvider.notifier).state = widget.number;
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      prefs.setString("userData", jsonEncode(value.toJson()));
+      ref.read(loginResponseProvider.notifier).state = value;
       showSuccessDialog(context);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Otp verified scuccessfully"),
@@ -315,9 +328,10 @@ class _OtpScreenState extends ConsumerState<ValidateOtpScreen> {
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pop(context); // Close dialog
       if (isNewUser) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => SignupScreen()),
+          MaterialPageRoute(builder: (context) => IncidentHomePage()),
+          (Route<dynamic> route) => false,
         );
       } else {
         Navigator.push(

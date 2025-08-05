@@ -1,9 +1,14 @@
+import 'dart:developer';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
+import 'package:ysr_reg_incident/feature/signup/ui/signup_screen_two.dart';
+import 'package:ysr_reg_incident/main.dart';
 import 'package:ysr_reg_incident/services/language_service.dart';
 
-class LanguageSelector extends StatelessWidget {
+class LanguageSelector extends ConsumerWidget {
   final bool showLabel;
   final EdgeInsets? padding;
 
@@ -14,21 +19,25 @@ class LanguageSelector extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = context.locale;
-    
+
     return Padding(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: padding ??
+          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (showLabel) Text(
-            'language'.tr(),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ) else const Spacer(),
+          if (showLabel)
+            Text(
+              'language'.tr(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            )
+          else
+            const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -43,6 +52,8 @@ class LanguageSelector extends StatelessWidget {
                 style: const TextStyle(color: Colors.black, fontSize: 14),
                 onChanged: (String? newValue) async {
                   if (newValue != null) {
+                    log(newValue);
+                    ref.read(localeProvider.notifier).state = Locale(newValue);
                     await LanguageService.changeLanguage(context, newValue);
                   }
                 },

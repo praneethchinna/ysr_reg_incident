@@ -53,7 +53,7 @@ class LoginApi {
     }
   }
 
-  Future<bool> verifyOtpIncident({
+  Future<LoginResponse?> verifyOtpIncident({
     required String mobile,
     required String otp,
   }) async {
@@ -67,7 +67,10 @@ class LoginApi {
       );
 
       if (response.statusCode == 200) {
-        return true;
+        if (response.data["user_exists"] == false) {
+          return null;
+        }
+        return LoginResponse.fromMap(response.data["user"]);
       } else {
         throw Exception("Failed to verify OTP");
       }
@@ -97,54 +100,58 @@ class LoginApi {
 }
 
 class LoginResponse {
-  final String message;
   final int userId;
   final String name;
-  final String role;
+  final String gender;
   final String mobile;
+  final String email;
   final String parliament;
   final String constituency;
-  final String gender;
-  final String email;
-  final bool blocked;
+  final String? mandalName;
+  final String? villageName;
+  final String state;
+  final String country;
 
   LoginResponse({
-    required this.message,
     required this.userId,
     required this.name,
-    required this.role,
+    required this.gender,
     required this.mobile,
+    required this.email,
     required this.parliament,
     required this.constituency,
-    required this.gender,
-    required this.email,
-    required this.blocked,
+    this.mandalName,
+    this.villageName,
+    required this.state,
+    required this.country,
   });
 
   factory LoginResponse.fromMap(Map<String, dynamic> json) => LoginResponse(
-        message: json['message'] ?? '',
         userId: json['user_id'] ?? 0,
         name: json['name'] ?? '',
-        role: json['role'] ?? '',
+        gender: json['gender'] ?? '',
         mobile: json['mobile'] ?? '',
+        email: json['email'] ?? '',
         parliament: json['parliament'] ?? '',
         constituency: json['constituency'] ?? '',
-        gender: json['gender'] ?? '',
-        email: json['email'] ?? '',
-        blocked: json['blocked'] ?? false,
+        mandalName: json['mandal_name'],
+        villageName: json['village_name'],
+        state: json['state'] ?? '',
+        country: json['country'] ?? '',
       );
 
   Map<String, dynamic> toJson() => {
-        'message': message,
         'user_id': userId,
         'name': name,
-        'role': role,
+        'gender': gender,
         'mobile': mobile,
+        'email': email,
         'parliament': parliament,
         'constituency': constituency,
-        'gender': gender,
-        'email': email,
-        'blocked': blocked,
+        'mandal_name': mandalName,
+        'village_name': villageName,
+        'state': state,
+        'country': country,
       };
 }
 

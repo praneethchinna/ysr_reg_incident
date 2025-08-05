@@ -15,9 +15,9 @@ class Assembly {
   factory Assembly.fromJson(Map<String, dynamic> json) {
     return Assembly(
       assemblyName: json['assembly_name'],
-      parliamentId: json['parliament_id'],
+      parliamentId: json['parliament_id']??0,
       assemblyId: json['assembly_id'],
-      regionalId: json['regional_id'],
+      regionalId: json['regional_id']??0,
     );
   }
 

@@ -16,7 +16,7 @@ class LanguageService {
   // Get the saved language code, defaults to English
   static Future<String> getLanguage() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_languageKey) ?? 'en';
+    return prefs.getString(_languageKey) ?? 'te';
   }
   
   // Change the app's language

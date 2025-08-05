@@ -3,6 +3,7 @@ import 'package:ysr_reg_incident/feature/incident_history/model/incident_details
 import 'package:ysr_reg_incident/feature/incident_history/model/incident_history_model.dart';
 
 import 'package:ysr_reg_incident/feature/incident_history/repo/incident_history_repository.dart';
+import 'package:ysr_reg_incident/feature/incident_history/ui/incident_history_page.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
 
@@ -15,8 +16,21 @@ final incidentHistoryProvider =
     FutureProvider.autoDispose<List<IncidentHistoryModel>>((ref) async {
   // TODO: Replace '4' with actual user ID from authentication
   final repository = ref.read(incidentHistoryRepositoryProvider);
-  return repository
-      .getIncidentHistory(ref.read(loginResponseProvider)!.userId.toString());
+
+  bool isUserIdAvailable = ref.read(loginResponseProvider) != null;
+  bool isNewUserIdAvailable = ref.watch(userIdProvider) != null;
+  bool isAnyUserIdAvailable = isUserIdAvailable || isNewUserIdAvailable;
+  String? userId = isAnyUserIdAvailable
+      ? isUserIdAvailable
+          ? ref.read(loginResponseProvider)?.userId.toString()
+          : ref.watch(userIdProvider).toString()
+      : null;
+
+  if (userId == null) {
+    throw Exception(" Please submit incident");
+  }
+
+  return repository.getIncidentHistory(userId);
 });
 
 final incidentDetailsProvider = FutureProvider.autoDispose

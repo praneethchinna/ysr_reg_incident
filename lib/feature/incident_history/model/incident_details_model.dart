@@ -34,6 +34,8 @@ class IncidentDetailsModel {
   final String? statusReason;
   final String createdAt;
   final int userId;
+  final String complaineeName;
+  final String complaineeDesignation;
 
   IncidentDetailsModel({
     required this.incidentId,
@@ -56,32 +58,36 @@ class IncidentDetailsModel {
     this.statusReason,
     required this.createdAt,
     required this.userId,
+   required  this.complaineeName,
+    required this.complaineeDesignation ,
   });
 
   factory IncidentDetailsModel.fromJson(Map<String, dynamic> json) {
     return IncidentDetailsModel(
-      incidentId: json['incident_id'] as int,
-      name: json['name'] as String,
-      gender: json['gender'] as String,
-      mobile: json['mobile'] as String,
-      email: json['email'] as String?,
-      parliament: json['parliament'] as String,
-      assembly: json['assembly'] as String,
-      incidentType: json['incident_type'] as String,
-      incidentPlace: json['incident_place'] as String,
-      incidentDate: json['incident_date'] as String,
-      incidentTime: json['incident_time'] as String,
-      incidentDescription: json['incident_description'] as String,
-      idProofType: json['id_proof_type'] as String?,
-      idProofPath: json['id_proof_path'] as String?,
-      selfiePath: json['selfie_path'] as String?,
+      incidentId: json['incident_id'] ?? 0,
+      name: json['name'] ?? '',
+      gender: json['gender'] ?? '',
+      mobile: json['mobile'] ?? '',
+      email: json['email']?.isNotEmpty == true ? json['email'] : '',
+      parliament: json['parliament'] ?? '',
+      assembly: json['assembly'] ?? '',
+      incidentType: json['incident_type'] ?? '',
+      incidentPlace: json['incident_place'] ?? '',
+      incidentDate: json['incident_date'] ?? '',
+      incidentTime: json['incident_time'] ?? '',
+      incidentDescription: json['incident_description'] ?? '',
+      idProofType: json['id_proof_type']?.isNotEmpty == true ? json['id_proof_type'] : '',
+      idProofPath: json['id_proof_path']?.isNotEmpty == true ? json['id_proof_path'] : '',
+      selfiePath: json['selfie_path']?.isNotEmpty == true ? json['selfie_path'] : '',
       incidentProofPaths: json['incident_proof_paths'] != null
-          ? List<String>.from(json['incident_proof_paths'] as List)
-          : null,
-      status: json['status'] as String,
-      statusReason: json['status_reason'] as String?,
-      createdAt: json['created_at'] as String,
-      userId: json['user_id'] as int,
+          ? json['incident_proof_paths']?.isNotEmpty == true ? [json['incident_proof_paths']] : []
+          : [],
+      status: json['status'] ?? '',
+      statusReason: json['status_reason']?.isNotEmpty == true ? json['status_reason'] : '',
+      createdAt: json['created_at'] ?? '',
+      userId: json['user_id'] ?? 0,
+      complaineeName: json['complainee_name'] ?? '',
+      complaineeDesignation: json['complainee_designation'] ?? '',
     );
   }
 }

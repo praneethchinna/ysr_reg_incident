@@ -182,7 +182,8 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                             value: _genderController.text.isNotEmpty
                                 ? _genderController.text
                                 : null,
-                            items: ['male'.tr(), 'female'.tr()].map((String gender) {
+                            items: ['male'.tr(), 'female'.tr()]
+                                .map((String gender) {
                               return DropdownMenuItem<String>(
                                 value: gender,
                                 child: Text(gender),
@@ -362,25 +363,25 @@ class _ProfileEditState extends ConsumerState<ProfileEdit> {
                                     final prefs = await ref
                                         .read(sharedPreferencesProvider.future);
 
-                                    final temp =
-                                        ref.read(loginResponseProvider)!;
-                                    final user = LoginResponse(
-                                        email: temp.email,
-                                        message: temp.message,
-                                        userId: temp.userId,
-                                        name: _nameController.text,
-                                        role: temp.role,
-                                        mobile: temp.mobile,
-                                        parliament: _parliamentController.text,
-                                        constituency:
-                                            _constituencyController.text,
-                                        gender: temp.gender,
-                                        blocked: false);
-                                    ref
-                                        .read(loginResponseProvider.notifier)
-                                        .state = user;
-                                    prefs.setString(
-                                        "userData", jsonEncode(user.toJson()));
+                                    // final temp =
+                                    //     ref.read(loginResponseProvider)!;
+                                    // final user = LoginResponse(
+                                    //     email: temp.email,
+                                    //     message: temp.message,
+                                    //     userId: temp.userId,
+                                    //     name: _nameController.text,
+                                    //     role: temp.role,
+                                    //     mobile: temp.mobile,
+                                    //     parliament: _parliamentController.text,
+                                    //     constituency:
+                                    //         _constituencyController.text,
+                                    //     gender: temp.gender,
+                                    //     blocked: false);
+                                    // ref
+                                    //     .read(loginResponseProvider.notifier)
+                                    //     .state = user;
+                                    // prefs.setString(
+                                    //     "userData", jsonEncode(user.toJson()));
 
                                     setState(() {
                                       savedSuccessfully = true;

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:gap/gap.dart';
 import 'package:ysr_reg_incident/feature/login/ui/login_ui.dart';
@@ -116,6 +117,41 @@ class _ScreenThreeState extends State<ScreenThree> {
                 ),
               ),
               Gap(20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  SizedBox(
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const VideoScreen(
+                                  videoPath: "assets/videos/ysr_video.mp4"),
+                            ),
+                                (Route<dynamic> route) => false,
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              "Skip",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward)
+                          ],
+                        )),
+                  ),
+                  Gap(20),
+                ],
+              ),
+              Gap(60),
             ],
           ),
         ));

@@ -126,5 +126,25 @@
   "type_your_phone_number": "Type Your Phone Number",
   "enter_your_phone_number": "Enter your phone number",
   "enter_valid_phone_number": "Please enter a valid phone number",
-  "otp_sent_successfully": "OTP sent successfully"
+  "otp_sent_successfully": "OTP sent successfully",
+
+  "mandal": "Mandal",
+  "village": "Village",
+  "enter_mandal_name": "Enter Mandal Name",
+  "enter_village": "Enter Village Name",
+  "complainee_name": "Complainee Name",
+  "complainee_designation": "Complainee Designation",
+  "upload_live_video": "Upload Live Video",
+  "live_video": "Live Video",
+  "enter_complainee_name": "Enter Complainee Name",
+  "enter_complainee_designation": "Enter Complainee Designation",
+
+  "enter_name": "Enter Name",
+  "incident_explanation_video": "Incident Explanation Video",
+
+  "selfie_video_description": "Selfie Video",
+  "upload_files": "Upload Files",
+
+  "preview_and_submit": "Preview & Submit"
+
 }

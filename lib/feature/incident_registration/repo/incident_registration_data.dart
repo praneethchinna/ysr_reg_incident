@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -11,9 +12,9 @@ class IncidentRegistrationData {
 
   IncidentRegistrationData(this._dio);
 
-  Future<List<IncidentTypes>> getIncidentCategories() async {
+  Future<List<IncidentTypes>> getIncidentCategories(String language) async {
     try {
-      final response = await _dio.get('/incident-categories');
+      final response = await _dio.get('/incident-categories?lang=$language');
       if (response.statusCode == 200) {
         return (response.data as List)
             .map((item) => IncidentTypes.fromJson(item))
@@ -26,12 +27,12 @@ class IncidentRegistrationData {
     }
   }
 
-  Future<bool> submitIncident({
+  Future<int?> submitIncident({
     required String? emailId,
-    required int userId,
+    required int? userId,
     required String name,
-    required String gender,
-    required String mobile,
+    required String? gender,
+    required String? mobile,
     required String parliament,
     required String assembly,
     required String incidentType,
@@ -41,6 +42,11 @@ class IncidentRegistrationData {
     required String incidentDescription,
     required String idProofType,
     required List<PlatformFile> incidentProofs,
+    required String mandal,
+    required String village,
+    required String complaineeName,
+    required String complaineeDesignation,
+    required File? incidentExplanation,
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -57,6 +63,14 @@ class IncidentRegistrationData {
         "incident_time": incidentTime,
         "incident_description": incidentDescription,
         "id_proof_type": idProofType,
+        "mandal_name": mandal,
+        "village_name": village,
+        "complainee_name": complaineeName,
+        "complainee_designation": complaineeDesignation,
+        "incident_video": incidentExplanation == null
+            ? null
+            : await MultipartFile.fromFile(incidentExplanation.path,
+                filename: incidentExplanation.path.split('/').last),
       });
 
       for (var file in incidentProofs) {
@@ -67,15 +81,17 @@ class IncidentRegistrationData {
         formData.files.add(MapEntry('incident_proofs', multipartFile));
       }
 
-      final response = await _dio.post('/submit-incident-mobile', data: formData);
+      final response =
+          await _dio.post('/submit-incident-mobile', data: formData);
 
       if (response.statusCode == 200) {
-        return true;
+        return response.data['user_id'];
       } else {
         throw Exception('Failed to submit incident: ${response.statusMessage}');
       }
     } on DioException catch (e) {
-      throw Exception('Dio error: ${e.response?.statusCode} - ${e.response?.data}');
+      throw Exception(
+          'Dio error: ${e.response?.statusCode} - ${e.response?.data}');
     } catch (e) {
       throw Exception('Unexpected error: $e');
     }

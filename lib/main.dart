@@ -5,9 +5,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
 import 'package:ysr_reg_incident/feature/login/ui/login_ui.dart';
+import 'package:ysr_reg_incident/feature/login/ui/otp_screen1.dart';
 import 'package:ysr_reg_incident/feature/onboarding/screen_one.dart';
 import 'package:ysr_reg_incident/services/shared_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,12 +30,10 @@ final localeProvider = StateProvider<Locale>((ref) {
 });
 
 void main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
-
-
 
   // Get the saved language
   final savedLanguage = await LanguageService.getLanguage();
@@ -45,20 +45,40 @@ void main() async {
         Locale('te'), // Telugu
       ],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
+      fallbackLocale: const Locale('te'),
       startLocale: Locale(savedLanguage),
       child: ProviderScope(
-        child: MyApp(),
+        child: MyApp(
+          language: savedLanguage,
+        ),
       ),
     ),
   );
   configLoading();
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
+  final String language;
+  const MyApp({Key? key, required this.language}) : super(key: key);
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(navigatorKey: navigatorKey,
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(localeProvider.notifier).state = Locale(widget.language);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       builder: EasyLoading.init(),
       localizationsDelegates: context.localizationDelegates,
@@ -143,12 +163,14 @@ class InitialScreenBuild extends ConsumerWidget {
             LoginResponse.fromMap(decodeData);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const IncidentHomePage()),
+          MaterialPageRoute(
+              builder: (context) => ScreenOne(isUserVerified: true)),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ScreenOne()),
+          MaterialPageRoute(
+              builder: (context) => ScreenOne(isUserVerified: false)),
         );
       }
     });

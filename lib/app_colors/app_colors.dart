@@ -11,7 +11,6 @@ class AppColors {
   static const Color initalScreenColor1 = Color(0xFFBFF0C4);
   static const Color electricOcean = Color(0xFF095FF0);
 
-
   static const Color backgroundLightGrey = Color(0xFFB9C7D7);
   static const Color backgroundGrey = Color(0xFFD0E3D1);
 

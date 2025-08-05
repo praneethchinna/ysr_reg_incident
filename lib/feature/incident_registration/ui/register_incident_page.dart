@@ -8,17 +8,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:ysr_reg_incident/feature/incident_history/provider/incident_history_provider.dart';
+import 'package:ysr_reg_incident/feature/incident_history/ui/incident_history_page.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/provider/incident_registration_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/repo/incident_registration_data.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/build_information_row.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_text_widget.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
+import 'package:ysr_reg_incident/feature/login/ui/validate_otp_screen.dart';
+import 'package:ysr_reg_incident/feature/signup/models/assembly.dart';
+import 'package:ysr_reg_incident/feature/signup/models/parliament.dart';
+import 'package:ysr_reg_incident/feature/signup/ui/signup_screen_two.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
+import 'package:ysr_reg_incident/utils/generic_dropdown_selector.dart';
 import 'package:ysr_reg_incident/utils/language_equivalent_key.dart';
 
 class RegisterIncidentPage extends ConsumerStatefulWidget {
@@ -32,9 +40,24 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _locationController;
   late final TextEditingController _descriptionController;
+  final parliamentTFController = TextEditingController();
+  final assemblyTFController = TextEditingController();
+  final nameController = TextEditingController();
+  final villageController = TextEditingController();
+  final complaineeNameController = TextEditingController();
+  final mandalController = TextEditingController();
+  final complaineeDesignationController = TextEditingController();
 
   @override
   void initState() {
+    final userData = ref.read(loginResponseProvider);
+    if (userData != null) {
+      parliamentTFController.text = userData.parliament;
+      assemblyTFController.text = userData.constituency;
+      nameController.text = userData.name;
+      villageController.text = userData.villageName ?? "";
+      mandalController.text = userData.mandalName ?? "";
+    }
     _locationController = TextEditingController();
     _descriptionController = TextEditingController();
 
@@ -45,6 +68,13 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
   void dispose() {
     _locationController.dispose();
     _descriptionController.dispose();
+    parliamentTFController.dispose();
+    assemblyTFController.dispose();
+    nameController.dispose();
+    villageController.dispose();
+    complaineeNameController.dispose();
+    mandalController.dispose();
+    complaineeDesignationController.dispose();
     super.dispose();
   }
 
@@ -66,7 +96,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
           ),
         ),
         child: Text(
-          title,
+          title.tr(),
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.black,
             fontSize: 16,
@@ -79,7 +109,9 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
 
   @override
   Widget build(BuildContext context) {
-    context.locale;
+    final locale = context.locale;
+
+    log(locale.languageCode);
     final incidentState = ref.watch(incidentNotifierProvider);
     final notifier = ref.read(incidentNotifierProvider.notifier);
     return incidentState.when(
@@ -232,7 +264,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                 onPress: () {
                                   notifier.updateIsCurrentIncident(true);
                                 },
-                                title: "Current Incident",
+                                title: "current_incident",
                                 isSelected: incidentState.isCurrentIncident),
                           ),
                           Gap(10),
@@ -241,11 +273,13 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                 onPress: () {
                                   notifier.updateIsCurrentIncident(false);
                                 },
-                                title: "Past Incident",
+                                title: "past_incident",
                                 isSelected: !incidentState.isCurrentIncident),
                           ),
                         ],
                       ),
+                      // if (ref.read(loginResponseProvider) == null)
+                      ...personalInformationWidget(notifier, incidentState),
                       Gap(20),
                       Text(
                         'complaint_info'.tr(),
@@ -259,6 +293,9 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                         ),
                         Gap(5),
                         DropdownButtonFormField<String>(
+                          onTap: () async {
+                            // notifier.getIncidentTypes();
+                          },
                           value: incidentState.incidentType.isEmpty
                               ? null
                               : incidentState.incidentType,
@@ -270,7 +307,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                           items: incidentState.incidentTypes.map((type) {
                             return DropdownMenuItem(
                               value: type.name,
-                              child: Text(equivalentKey(type.name)),
+                              child: Text(type.name),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -379,6 +416,47 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                       Gap(15),
                       ...[
                         RegTextWidget(
+                          text: 'enter_complainee_name'.tr(),
+                        ),
+                        Gap(5),
+                        TextFormField(
+                          onChanged: (value) {
+                            log(value);
+                            notifier.updateComplainantName(value);
+                          },
+                          controller: complaineeNameController,
+                          decoration: InputDecoration(
+                            hintText: 'enter_complainee_name'.tr(),
+                            contentPadding:
+                                EdgeInsets.only(top: 20, left: 12, right: 12),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'pls_enter_complainee_name'.tr()
+                              : null,
+                        )
+                      ],
+                      Gap(15),
+                      ...[
+                        RegTextWidget(
+                          text: 'enter_complainee_designation'.tr(),
+                        ),
+                        Gap(5),
+                        TextFormField(
+                          onChanged: (value) {
+                            notifier.updateComplaineeDesignation(value);
+                          },
+                          controller: complaineeDesignationController,
+                          decoration: InputDecoration(
+                            hintText: 'enter_complainee_designation'.tr(),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'pls_enter_complainee_designation'.tr()
+                              : null,
+                        )
+                      ],
+                      Gap(15),
+                      ...[
+                        RegTextWidget(
                           text: 'incident_desc'.tr(),
                         ),
                         Gap(5),
@@ -399,7 +477,97 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                               : null,
                         )
                       ],
-                      Gap(15),
+
+                      Gap(30),
+                      RegTextWidget(
+                        text: 'selfie_video_description'.tr(),
+                      ),
+                      Gap(5),
+                      if (incidentState.incidentExplanation == null)
+                        DottedBorder(
+                          borderType: BorderType.RRect,
+                          radius: Radius.circular(12),
+                          dashPattern: [8, 4],
+                          color: Colors.deepPurple,
+                          strokeWidth: 1.5,
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                // Text('max_file_size'.tr(),
+                                //     style: TextStyle(color: Colors.grey)),
+                                SizedBox(height: 10),
+                                OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final result = await ImagePicker()
+                                        .pickVideo(source: ImageSource.camera);
+
+                                    if (result != null) {
+                                      notifier.updateIncidentExplanationFile(
+                                          File(result.path));
+                                    }
+                                  },
+                                  icon: Icon(
+                                    Icons.upload,
+                                  ),
+                                  label: Text('upload_live_video'.tr()),
+                                ),
+                                SizedBox(height: 10),
+                                Text('live_video'.tr(),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.grey.shade200,
+                          ),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  OpenFile.open(
+                                      incidentState.incidentExplanation!.path);
+                                },
+                                child: Icon(
+                                  Icons.video_library,
+                                  color: Colors.deepPurple,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'incident_explanation_video'.tr(),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 16),
+                              ),
+                              Spacer(),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete,
+                                  color: Colors.deepPurple,
+                                ),
+                                onPressed: () {
+                                  notifier.updateIncidentExplanationFile(null);
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                      Gap(30),
+                      RegTextWidget(
+                        text: 'upload_files'.tr(),
+                      ),
+                      Gap(5),
                       if (incidentState.images.length < 3)
                         DottedBorder(
                           borderType: BorderType.RRect,
@@ -416,8 +584,8 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                             ),
                             child: Column(
                               children: [
-                                Text('max_file_size'.tr(),
-                                    style: TextStyle(color: Colors.grey)),
+                                // Text('max_file_size'.tr(),
+                                //     style: TextStyle(color: Colors.grey)),
                                 SizedBox(height: 10),
                                 OutlinedButton.icon(
                                   onPressed: () async {
@@ -433,7 +601,8 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                         'mp4',
                                         'mov',
                                         'mp3',
-                                        'm4a'
+                                        'm4a',
+                                        "pdf"
                                       ],
                                     );
 
@@ -482,7 +651,8 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
 
-                                if (incidentState.images.isEmpty) {
+                                if (incidentState.images.isEmpty ||
+                                    incidentState.incidentExplanation == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         content: Text('upload_images'.tr())),
@@ -514,7 +684,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Preview & \nSubmit',
+                        'preview_and_submit'.tr(),
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
@@ -530,55 +700,55 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                             fontSize: 12, fontWeight: FontWeight.w400),
                       ),
                       Gap(10),
-                      RegTextWidget(
-                        text: 'personal_info'.tr(),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        margin: const EdgeInsets.only(top: 10, bottom: 10),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.grey.shade400, width: 0.7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildInformationRow(
-                                title: 'name'.tr(),
-                                value: ref.read(loginResponseProvider)!.name),
-                            buildInformationRow(
-                                title: 'gender'.tr(),
-                                value: ref.read(loginResponseProvider)!.gender),
-                            buildInformationRow(
-                                title: 'phone_no'.tr(),
-                                value: ref.read(loginResponseProvider)!.mobile),
-                            buildInformationRow(
-                                title: 'email_id'.tr(),
-                                value: ref
-                                        .read(loginResponseProvider)!
-                                        .email
-                                        .isEmpty
-                                    ? 'not_available'.tr()
-                                    : ref.read(loginResponseProvider)!.email),
-                            buildInformationRow(
-                                title: 'parliament'.tr(),
-                                value: ref
-                                    .read(loginResponseProvider)!
-                                    .parliament),
-                            buildInformationRow(
-                                title: 'constituency'.tr(),
-                                value: ref
-                                    .read(loginResponseProvider)!
-                                    .constituency),
-                          ],
-                        ),
-                      ),
+                      // RegTextWidget(
+                      //   text: 'personal_info'.tr(),
+                      // ),
+                      // Container(
+                      //   padding: const EdgeInsets.all(10),
+                      //   margin: const EdgeInsets.only(top: 10, bottom: 10),
+                      //   decoration: BoxDecoration(
+                      //     border: Border.all(
+                      //         color: Colors.grey.shade400, width: 0.7),
+                      //     borderRadius: BorderRadius.circular(10),
+                      //   ),
+                      //   child: Column(
+                      //     crossAxisAlignment: CrossAxisAlignment.start,
+                      //     children: [
+                      //       buildInformationRow(
+                      //           title: 'name'.tr(),
+                      //           value: ref.read(loginResponseProvider)!.name),
+                      //       buildInformationRow(
+                      //           title: 'gender'.tr(),
+                      //           value: ref.read(loginResponseProvider)!.gender),
+                      //       buildInformationRow(
+                      //           title: 'phone_no'.tr(),
+                      //           value: ref.read(loginResponseProvider)!.mobile),
+                      //       buildInformationRow(
+                      //           title: 'email_id'.tr(),
+                      //           value: ref
+                      //                   .read(loginResponseProvider)!
+                      //                   .email
+                      //                   .isEmpty
+                      //               ? 'not_available'.tr()
+                      //               : ref.read(loginResponseProvider)!.email),
+                      //       buildInformationRow(
+                      //           title: 'parliament'.tr(),
+                      //           value: ref
+                      //               .read(loginResponseProvider)!
+                      //               .parliament),
+                      //       buildInformationRow(
+                      //           title: 'constituency'.tr(),
+                      //           value: ref
+                      //               .read(loginResponseProvider)!
+                      //               .constituency),
+                      //     ],
+                      //   ),
+                      // ),
                       Gap(5),
                       Row(
                         children: [
                           RegTextWidget(
-                            text: 'Incident Information',
+                            text: 'incident_info'.tr(),
                           ),
                           Spacer(),
                           IconButton(
@@ -601,6 +771,12 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            buildInformationRow(
+                                title: 'complainee_name'.tr(),
+                                value: incidentState.complaineeName),
+                            buildInformationRow(
+                                title: 'complainee_designation'.tr(),
+                                value: incidentState.complaineeDesignation),
                             buildInformationRow(
                                 title: 'incident_type'.tr(),
                                 value: incidentState.incidentType.isEmpty
@@ -647,78 +823,175 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                             const NeverScrollableScrollPhysics(),
                                         itemCount: incidentState.images.length,
                                         itemBuilder: (context, index) {
-                                          final isImage = [
-                                            '.jpg',
-                                            '.jpeg',
-                                            '.png'
-                                          ].any(incidentState.images[index].name
+                                          switch (incidentState
+                                              .images[index].name
                                               .toLowerCase()
-                                              .endsWith);
+                                              .split('.')
+                                              .last) {
+                                            case 'jpg':
+                                            case 'jpeg':
+                                            case 'png':
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 8),
+                                                child: GestureDetector(
+                                                    onTap: () {
+                                                      _openFile(incidentState
+                                                          .images[index]);
+                                                    },
+                                                    child: ClipRRect(
+                                                      child: Image.file(
+                                                          File(incidentState
+                                                              .images[index]
+                                                              .path!),
+                                                          width: 100,
+                                                          height: 100,
+                                                          fit: BoxFit.cover),
+                                                    )),
+                                              );
+                                            case 'mp4':
+                                            case 'mov':
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 8),
+                                                child: GestureDetector(
+                                                    onTap: () {
+                                                      _openFile(incidentState
+                                                          .images[index]);
+                                                    },
+                                                    child: Container(
+                                                      width: 100,
+                                                      height: 100,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black38,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.play_arrow,
+                                                        size: 50,
+                                                        color: Colors.white,
+                                                      ),
+                                                    )),
+                                              );
+                                            case 'mp3':
+                                            case 'm4a':
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 8),
+                                                child: GestureDetector(
+                                                    onTap: () {
+                                                      _openFile(incidentState
+                                                          .images[index]);
+                                                    },
+                                                    child: Container(
+                                                      width: 100,
+                                                      height: 100,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black38,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.audio_file,
+                                                        size: 50,
+                                                        color: Colors.white,
+                                                      ),
+                                                    )),
+                                              );
+                                            default:
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 8),
+                                                child: GestureDetector(
+                                                    onTap: () {
+                                                      _openFile(incidentState
+                                                          .images[index]);
+                                                    },
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.deepPurple
+                                                            .withOpacity(0.1),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                      width: 100,
+                                                      height: 100,
+                                                      child: Icon(
+                                                        Icons.insert_drive_file,
+                                                        color:
+                                                            Colors.deepPurple,
+                                                        size: 50,
+                                                      ),
+                                                    )),
+                                              );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (incidentState.incidentExplanation != null) ...[
+                              Gap(5),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 4,
+                                    child: Text(
+                                        'incident_explanation_video'.tr(),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 14)),
+                                  ),
+                                  Text("   :   "),
+                                  Expanded(
+                                    flex: 6,
+                                    child: SizedBox(
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemCount: incidentState
+                                                .incidentExplanation!
+                                                .path
+                                                .isNotEmpty
+                                            ? 1
+                                            : 0,
+                                        itemBuilder: (context, index) {
                                           final isVideo = ['.mp4', '.mov'].any(
                                               incidentState.images[index].name
                                                   .toLowerCase()
                                                   .endsWith);
-                                          final isAudio = ['.mp3', '.m4a'].any(
-                                              incidentState.images[index].name
-                                                  .toLowerCase()
-                                                  .endsWith);
+
                                           return Padding(
                                             padding: const EdgeInsets.only(
                                                 bottom: 8),
                                             child: GestureDetector(
                                                 onTap: () {
-                                                  _openFile(incidentState
-                                                      .images[index]);
+                                                  OpenFile.open(incidentState
+                                                      .incidentExplanation!
+                                                      .path);
                                                 },
-                                                child: isImage
-                                                    ? ClipRRect(
-                                                        child: Image.file(
-                                                            File(incidentState
-                                                                .images[index]
-                                                                .path!),
-                                                            width: 100,
-                                                            height: 100,
-                                                            fit: BoxFit.cover),
-                                                      )
-                                                    : isVideo
-                                                        ? Container(
-                                                            width: 100,
-                                                            height: 100,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors
-                                                                  .black38,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8),
-                                                            ),
-                                                            child: Icon(
-                                                              Icons.play_arrow,
-                                                              size: 50,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          )
-                                                        : Container(
-                                                            width: 100,
-                                                            height: 100,
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: Colors
-                                                                  .black38,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          8),
-                                                            ),
-                                                            child: Icon(
-                                                              Icons.audio_file,
-                                                              size: 50,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          )
+                                                child: Container(
+                                                  width: 100,
+                                                  height: 100,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black38,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.play_arrow,
+                                                    size: 50,
+                                                    color: Colors.white,
+                                                  ),
+                                                )
 
                                                 // Icon(
                                                 //         isVideo
@@ -769,8 +1042,6 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                               ),
                               onPressed: incidentState.agreed
                                   ? () {
-                                      final userData =
-                                          ref.read(loginResponseProvider);
                                       if (!incidentState.agreed) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
@@ -780,18 +1051,34 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                         );
                                         return;
                                       }
+                                      final userData =
+                                          ref.read(loginResponseProvider);
+                                      bool isUserDataAvailable =
+                                          userData != null;
                                       final repo = IncidentRegistrationData(
                                           ref.read(dioProvider));
+                                      final mobileNumber =
+                                          ref.read(mobileNumberProvider);
                                       EasyLoading.show();
                                       repo
                                           .submitIncident(
-                                              emailId: userData?.email,
-                                              userId: userData!.userId,
-                                              name: userData.name,
-                                              gender: userData.gender,
-                                              mobile: userData.mobile,
-                                              parliament: userData.parliament,
-                                              assembly: userData.constituency,
+                                              emailId: isUserDataAvailable
+                                                  ? userData.email
+                                                  : null,
+                                              userId: isUserDataAvailable
+                                                  ? userData.userId
+                                                  : 0,
+                                              name: incidentState.name,
+                                              gender: isUserDataAvailable
+                                                  ? userData.gender
+                                                  : null,
+                                              mobile: isUserDataAvailable
+                                                  ? userData.mobile
+                                                  : mobileNumber,
+                                              parliament: incidentState
+                                                  .parliament!.parliamentName,
+                                              assembly: incidentState
+                                                  .constituency!.assemblyName,
                                               incidentType:
                                                   incidentState.incidentType,
                                               incidentPlace:
@@ -805,9 +1092,43 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                               idProofType:
                                                   incidentState.incidentType,
                                               incidentProofs:
-                                                  incidentState.images)
+                                                  incidentState.images,
+                                              mandal: incidentState.mandal,
+                                              village: incidentState.village,
+                                              complaineeName:
+                                                  incidentState.complaineeName,
+                                              complaineeDesignation:
+                                                  incidentState
+                                                      .complaineeDesignation,
+                                              incidentExplanation: incidentState
+                                                  .incidentExplanation)
                                           .then((value) {
-                                        if (value) {
+                                        if (value != null) {
+                                          ref
+                                              .read(userIdProvider.notifier)
+                                              .state = value;
+                                          notifier
+                                              .updateComplaineeDesignation('');
+                                          notifier.updateComplainantName('');
+                                          notifier.updateDescription('');
+                                          notifier.updateLocation('');
+                                          notifier.updateIncidentType('');
+                                          notifier.updateImages([]);
+                                          // notifier.updateName('');
+                                          //
+                                          // notifier.updateMandal('');
+                                          // notifier.updateVillage('');
+
+                                          _locationController.clear();
+                                          _descriptionController.clear();
+                                          // parliamentTFController.clear();
+                                          // assemblyTFController.clear();
+                                          // nameController.clear();
+                                          // villageController.clear();
+                                          complaineeNameController.clear();
+                                          // mandalController.clear();
+                                          complaineeDesignationController
+                                              .clear();
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                                   behavior:
@@ -822,8 +1143,8 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                               .read(tabIndexProvider.notifier)
                                               .update((state) => 1);
 
-                                          ref.invalidate(
-                                              incidentHistoryProvider);
+                                          // ref.invalidate(
+                                          //     incidentHistoryProvider);
                                         }
                                       }, onError: (error, stackTrace) {
                                         ScaffoldMessenger.of(context)
@@ -843,6 +1164,165 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
             ],
           );
         });
+  }
+
+  List<Widget> personalInformationWidget(
+      IncidentNotifier notifier, IncidentState incidentState) {
+    return [
+      Gap(20),
+      Text(
+        'personal_info'.tr(),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      ),
+      Gap(10),
+      ...[
+        RegTextWidget(
+          text: 'name'.tr(),
+        ),
+        Gap(5),
+        TextFormField(
+          onChanged: (value) {
+            notifier.updateName(value);
+          },
+          controller: nameController,
+          decoration: InputDecoration(
+            hintText: 'enter_name'.tr(),
+          ),
+          validator: (value) =>
+              value == null || value.isEmpty ? 'pls_enter_name'.tr() : null,
+        )
+      ],
+      SizedBox(height: 10),
+      ...[
+        RegTextWidget(
+          text: 'parliament'.tr(),
+        ),
+        Gap(5),
+        AsyncDropdownSelector<Parliament>(
+          showSubtitle: false,
+          hintText: "Parliament",
+          subTitle: "",
+          itemsProvider: parliamentProvider,
+          textEditingController: parliamentTFController,
+          suffixIconColor: AppColors.textFieldColor,
+          itemBuilder: (itemContext, entity, isSelected) {
+            return ListTile(
+              title: Text(
+                entity.parliamentName.toString(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                notifier.updateParliament(entity);
+                parliamentTFController.text = entity.parliamentName.toString();
+                Navigator.pop(itemContext);
+              },
+            );
+          },
+          filter: (entity, searchText) {
+            return entity.parliamentName
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase());
+          },
+          validator: (value) {
+            if (value == "Parliament" || value?.isEmpty == true) {
+              return "Please select Parliament";
+            }
+            return null;
+          },
+        ),
+      ],
+      SizedBox(height: 10),
+      if (incidentState.parliament != null) ...[
+        RegTextWidget(
+          text: 'constituency'.tr(),
+        ),
+        Gap(5),
+        AsyncDropdownSelector<Assembly>(
+          showSubtitle: false,
+          hintText: "Assembly",
+          subTitle: "Select Assembly",
+          suffixIconColor: AppColors.textFieldColor,
+          itemsProvider:
+              assemblyProvider(incidentState.parliament!.parliamentId),
+          textEditingController: assemblyTFController,
+          itemBuilder: (itemContext, entity, isSelected) {
+            return ListTile(
+              title: Text(
+                entity.assemblyName.toString(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                notifier.updateConstituency(entity);
+                assemblyTFController.text = entity.assemblyName.toString();
+                Navigator.pop(itemContext);
+              },
+            );
+          },
+          filter: (entity, searchText) {
+            return entity.assemblyName
+                .toString()
+                .toLowerCase()
+                .contains(searchText.toLowerCase());
+          },
+          validator: (value) {
+            if (value == "Assembly" || value?.isEmpty == true) {
+              return "Please select Assembly";
+            }
+            return null;
+          },
+        ),
+      ],
+      Gap(10),
+      ...[
+        RegTextWidget(
+          text: 'mandal'.tr(),
+        ),
+        Gap(5),
+        TextFormField(
+          onChanged: (value) {
+            notifier.updateMandal(value);
+          },
+          controller: mandalController,
+          decoration: InputDecoration(
+            hintText: 'enter_mandal_name'.tr(),
+          ),
+          validator: (value) => value == null || value.isEmpty
+              ? 'pls_enter_mandal_name'.tr()
+              : null,
+        )
+      ],
+      Gap(10),
+      ...[
+        RegTextWidget(
+          text: 'village'.tr(),
+        ),
+        Gap(5),
+        TextFormField(
+          onChanged: (value) {
+            notifier.updateVillage(value);
+          },
+          controller: villageController,
+          decoration: InputDecoration(
+            hintText: 'enter_village'.tr(),
+          ),
+          validator: (value) =>
+              value == null || value.isEmpty ? 'pls_enter_village'.tr() : null,
+        )
+      ],
+      Gap(20),
+      Divider(
+        color: Colors.black,
+        height: 20,
+        thickness: 1,
+      ),
+    ];
   }
 
   void _openFile(PlatformFile file) {

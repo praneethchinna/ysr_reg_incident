@@ -12,6 +12,10 @@ import 'package:ysr_reg_incident/feature/incident_registration/widgets/build_inf
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_text_widget.dart';
 import 'package:ysr_reg_incident/utils/language_equivalent_key.dart';
 
+final userIdProvider = StateProvider<int?>((ref) {
+  return null; // Example user ID
+});
+
 class IncidentHistoryPage extends ConsumerWidget {
   const IncidentHistoryPage({super.key});
 
@@ -271,7 +275,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                 ),
                 const Gap(8),
                 Text(
-                  equivalentKey(widget.incident.incidentType),
+                  widget.incident.incidentType,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -383,40 +387,40 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            RegTextWidget(text: 'personal_information'.tr()),
-                            Gap(8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: Colors.grey.shade300, width: 1),
-                              ),
-                              child: Column(
-                                children: [
-                                  buildInformationRow(
-                                      title: 'name'.tr(),
-                                      value: incidentDetails.name),
-                                  buildInformationRow(
-                                      title: 'gender'.tr(),
-                                      value: incidentDetails.gender),
-                                  buildInformationRow(
-                                      title: 'phone_no'.tr(),
-                                      value: incidentDetails.mobile),
-                                  buildInformationRow(
-                                      title: 'email_id'.tr(),
-                                      value: incidentDetails.email ?? 'N/A'),
-                                  buildInformationRow(
-                                      title: 'parliament'.tr(),
-                                      value: incidentDetails.parliament),
-                                  buildInformationRow(
-                                      title: 'assembly'.tr(),
-                                      value: incidentDetails.assembly),
-                                ],
-                              ),
-                            ),
+                            // RegTextWidget(text: 'personal_information'.tr()),
+                            // Gap(8),
+                            // Container(
+                            //   padding: const EdgeInsets.symmetric(
+                            //       horizontal: 8, vertical: 4),
+                            //   decoration: BoxDecoration(
+                            //     color: Colors.white,
+                            //     borderRadius: BorderRadius.circular(12),
+                            //     border: Border.all(
+                            //         color: Colors.grey.shade300, width: 1),
+                            //   ),
+                            //   child: Column(
+                            //     children: [
+                            //       buildInformationRow(
+                            //           title: 'name'.tr(),
+                            //           value: incidentDetails.name),
+                            //       buildInformationRow(
+                            //           title: 'gender'.tr(),
+                            //           value: incidentDetails.gender),
+                            //       buildInformationRow(
+                            //           title: 'phone_no'.tr(),
+                            //           value: incidentDetails.mobile),
+                            //       buildInformationRow(
+                            //           title: 'email_id'.tr(),
+                            //           value: incidentDetails.email ?? 'N/A'),
+                            //       buildInformationRow(
+                            //           title: 'parliament'.tr(),
+                            //           value: incidentDetails.parliament),
+                            //       buildInformationRow(
+                            //           title: 'assembly'.tr(),
+                            //           value: incidentDetails.assembly),
+                            //     ],
+                            //   ),
+                            // ),
                             const SizedBox(height: 16),
                             RegTextWidget(text: 'incident_info'.tr()),
                             Gap(8),
@@ -431,6 +435,14 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                               ),
                               child: Column(
                                 children: [
+                                  buildInformationRow(
+                                      title: 'enter_complainee_name'.tr(),
+                                      value: incidentDetails.complaineeName),
+                                  buildInformationRow(
+                                      title:
+                                          'enter_complainee_designation'.tr(),
+                                      value: incidentDetails
+                                          .complaineeDesignation),
                                   buildInformationRow(
                                       title: 'incident_type'.tr(),
                                       value: incidentDetails.incidentType),
@@ -453,19 +465,22 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                                       .when(
                                           data: (urls) {
                                             if (urls.isNotEmpty) {
-                                              return Column(
-                                                children: [
-                                                  _buildFileSection(
-                                                      'incident_proof'.tr(),
-                                                      urls),
-                                                ],
-                                              );
+                                              return _buildFileSection(
+                                                  'incident_proof'.tr(), urls);
                                             }
                                             return const SizedBox.shrink();
                                           },
                                           loading: () => Container(),
                                           error: (error, _) =>
                                               Text('Error: $error')),
+                                  Column(
+                                    children: [
+                                      _buildProofFileSection(
+                                          'incident_proof'.tr(), [
+                                        widget.incident.incidentProofPaths ?? ""
+                                      ]),
+                                    ],
+                                  )
                                 ],
                               ),
                             )
@@ -485,10 +500,10 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
         );
   }
 
-  Widget _buildFileSection(String title, List<String> multiUrls) {
+  Widget _buildProofFileSection(String title, List<String> multiUrls) {
     List<String> urls = multiUrls
         .map((url) =>
-            "https://peddapuramysrcp.com/api/view-incident-media/proof/${url.split("/").last}")
+            "https://peddapuramysrcp.com/api/view-incident-media/video_proof/${url.split("/").last}")
         .toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,6 +597,119 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
     );
   }
 
+  Widget _buildFileSection(String title, List<String> multiUrls) {
+    List<String> urls = multiUrls.map((url) {
+      if (url.split(".").last == "pdf") {
+        return "https://peddapuramysrcp.com/api/get-incident-pdf/${url.split("/").last}";
+      }
+
+      return "https://peddapuramysrcp.com/api/view-incident-media/proof/${url.split("/").last}";
+    }).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: urls.length > 3 ? 3 : urls.length,
+            itemBuilder: (context, index) {
+              final url = urls[index];
+              final isVideo = _isVideo(url);
+              final isAudio = _isAudio(url);
+              final isPdf = _isPdf(url);
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: GestureDetector(
+                  onTap: () => showFullDialog(context, url),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Builder(
+                      builder: (context) {
+                        return switch (true) {
+                          _ when isVideo => Container(
+                              width: 100,
+                              height: 100,
+                              color: Colors.grey[300],
+                              child: Image.asset(
+                                'assets/video_icon.png',
+                                width: 40,
+                                height: 40,
+                              ),
+                            ),
+                          _ when isAudio => Container(
+                              width: 100,
+                              height: 100,
+                              color: Colors.grey[300],
+                              child: Icon(
+                                Icons.audio_file,
+                                color: Colors.deepPurple.withOpacity(0.8),
+                                size: 60,
+                              ),
+                            ),
+                        _ when isPdf => Container(
+                              width: 100,
+                              height: 100,
+                              color: Colors.grey[300],
+                              child: Icon(
+                                Icons.picture_as_pdf,
+                                color: Colors.deepPurple.withOpacity(0.8),
+                                size: 60,
+                              ),
+                            ),
+                          _ => Image.network(
+                              url,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 100,
+                                  height: 100,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image,
+                                      color: Colors.grey),
+                                );
+                              },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                            )
+                        };
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   bool _isVideo(String url) =>
       url.endsWith('.mp4') ||
       url.endsWith('.avi') ||
@@ -590,4 +718,8 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
 
   bool _isAudio(String url) =>
       url.endsWith('.mp3') || url.endsWith('.wav') || url.endsWith('.ogg');
+
+  bool _isPdf(String url) =>
+      url.endsWith('.pdf') || url.endsWith('.PDF');
+
 }
