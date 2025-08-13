@@ -6,8 +6,7 @@ class RegButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isEnabled;
 
-  const
-  RegButton({
+  const RegButton({
     super.key,
     required this.child,
     this.onPressed,
@@ -16,9 +15,9 @@ class RegButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200,
-      height: 35,
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: AppColors.primaryColor,

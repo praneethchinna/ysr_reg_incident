@@ -26,7 +26,7 @@ class LanguageSelector extends ConsumerWidget {
       padding: padding ??
           const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: [
           if (showLabel)
             Text(
@@ -36,8 +36,7 @@ class LanguageSelector extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
               ),
             )
-          else
-            const Spacer(),
+        ,
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(

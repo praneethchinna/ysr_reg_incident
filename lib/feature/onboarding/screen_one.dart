@@ -48,7 +48,7 @@ class _ScreenOneState extends State<ScreenOne> {
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/jagan_digital_book.jpeg'),
+            image: AssetImage('assets/jagan_digital_library.jpeg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -67,7 +67,7 @@ class _ScreenOneState extends State<ScreenOne> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => VideoScreen(
-                          videoPath: "assets/videos/ysr_video.mp4",
+                          videoPath: "assets/videos/jagan_digital_library.mp4",
                           isUserVerified: widget.isUserVerified,
                         ),
                       ),

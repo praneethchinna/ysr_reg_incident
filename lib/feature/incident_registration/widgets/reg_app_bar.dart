@@ -13,7 +13,7 @@ class RegAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Gradient? gradient;
   final Color?
       defaultContentColor; // Color for title text, leading icon, and action icons
-
+  final double height;
   const RegAppBar({
     super.key,
     this.leading,
@@ -22,11 +22,12 @@ class RegAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.centerTitle, // Pass directly to AppBar
     this.elevation, // Pass directly to AppBar
     this.gradient,
+    this.height = kToolbarHeight, // Default height for AppBar
     this.defaultContentColor = Colors.black, // Default to white as per your UI
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize =>  Size.fromHeight(height);
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +37,6 @@ class RegAppBar extends StatelessWidget implements PreferredSizeWidget {
       // `automaticallyImplyLeading` is managed by AppBar internally.
       // If `leading` is null and can pop, it will show a back button.
       automaticallyImplyLeading: true,
-
       title: title, // Pass the title widget directly
       actions: actions, // Pass the list of action widgets directly
       centerTitle: centerTitle, // AppBar's internal logic handles centering

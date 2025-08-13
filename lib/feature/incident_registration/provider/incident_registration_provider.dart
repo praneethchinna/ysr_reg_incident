@@ -2,12 +2,14 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart' as loc;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/repo/incident_registration_data.dart';
 import 'package:ysr_reg_incident/feature/login/repo/login_api.dart';
+import 'package:ysr_reg_incident/feature/login/ui/validate_otp_screen.dart';
 import 'package:ysr_reg_incident/feature/signup/models/assembly.dart';
 import 'package:ysr_reg_incident/feature/signup/models/parliament.dart';
 import 'package:ysr_reg_incident/feature/signup/ui/signup_screen_two.dart';
@@ -28,14 +30,25 @@ class IncidentTypes {
   }
 }
 
+class StepperData {
+  final String title;
+  final String body;
+
+  final StepState stateState;
+  StepperData(
+      {required this.title,
+      required this.body,
+      this.stateState = StepState.disabled});
+}
+
 @riverpod
 class IncidentNotifier extends _$IncidentNotifier {
+  late IncidentRegistrationData incidentRegistrationData;
   @override
   Future<IncidentState> build() async {
     final userData = ref.read(loginResponseProvider);
 
-    IncidentRegistrationData incidentRegistrationData =
-        IncidentRegistrationData(ref.read(dioProvider));
+    incidentRegistrationData = IncidentRegistrationData(ref.read(dioProvider));
     final incidentTypes = await incidentRegistrationData
         .getIncidentCategories(ref.watch(localeProvider).languageCode);
 
@@ -45,6 +58,12 @@ class IncidentNotifier extends _$IncidentNotifier {
     loc.Location location = loc.Location();
     String locationAndAddress = await getLocationAndAddress(location);
     return IncidentState(
+      stepperDataList: [
+        StepperData(
+          title: "File Upload",
+          body: "Uploading files to server",
+        )
+      ],
       incidentType: "",
       description: "",
       location: locationAndAddress,
@@ -67,53 +86,72 @@ class IncidentNotifier extends _$IncidentNotifier {
     );
   }
 
+  Future<int?> submitIncident() async {
+    final value = state.value;
+    _updateState(state.value?.copyWith(isLoading: true));
+    try {
+      final response = await incidentRegistrationData.generateMultipleFiles(
+          value!.images.map((e) => File(e.path.toString())).toList(),
+          File(value.incidentExplanation?.path ?? ""));
+
+      final isUploaded =
+          await incidentRegistrationData.uploadFiles(urls: response);
+      if (!isUploaded) {
+        throw Exception("Failed to upload files");
+      }
+
+      final userData = ref.read(loginResponseProvider);
+      final mobileNumber = ref.read(mobileNumberProvider);
+      final incidentId = await incidentRegistrationData.submitIncident(
+        emailId: userData?.email ?? "",
+        userId: userData?.userId ?? 0,
+        name: value.name,
+        gender: userData?.gender ?? "",
+        mobile: userData != null ? userData.mobile : mobileNumber,
+        parliament: value.parliament?.parliamentName ?? "",
+        assembly: value.constituency?.assemblyName ?? "",
+        incidentType: value.incidentType,
+        incidentPlace: value.location,
+        incidentDate: value.incidentDate,
+        incidentTime: value.incidentTime,
+        incidentDescription: value.description,
+        idProofType: value.incidentType,
+        mandal: value.mandal,
+        village: value.village,
+        complaineeName: value.complaineeName,
+        complaineeDesignation: value.complaineeDesignation,
+        incidentProofsUrls: response
+            .where((value) => value.fileType.toLowerCase() == "incident_proofs")
+            .map((e) => e.fileUrl)
+            .toList(),
+        incidentVideoUrl: response
+            .where((value) => value.fileType.toLowerCase() == "video_proofs")
+            .map((e) => e.fileUrl)
+            .toList()
+            .first,
+      );
+      _updateState(state.value?.copyWith(isLoading: false));
+      return incidentId;
+    } catch (e) {
+      _updateState(state.value?.copyWith(isLoading: false));
+      rethrow;
+    }
+  }
+
+  Future<void> updateStateData(
+      {required List<StepperData> stepperDataList}) async {
+    _updateState(state.value?.copyWith(stepperData: [
+      ...stepperDataList,
+      ...state.value!.stepperDataList,
+    ]));
+  }
+
   Future<void> updateParliament(Parliament value) async {
     _updateState(state.value?.copyWith(parliament: value));
   }
 
   Future<void> updateConstituency(Assembly value) async {
     _updateState(state.value?.copyWith(constituency: value));
-  }
-
-  Future<String> getLocationAndAddress(loc.Location location) async {
-    bool serviceEnabled;
-    loc.PermissionStatus permissionGranted;
-    loc.LocationData locationData;
-
-    // Check permission
-    permissionGranted = await location.hasPermission();
-    if (permissionGranted == loc.PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != loc.PermissionStatus.granted) {
-        log("Permission not granted");
-        return ""; // Permission not granted
-      }
-    }
-
-    // Check if location service is enabled
-    serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        log("Location service not enabled");
-        return ""; // Location service not enabled
-      }
-    }
-
-    // Get location
-    locationData = await location.getLocation();
-    double lat = locationData.latitude!;
-    double lng = locationData.longitude!;
-
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      Placemark place = placemarks.first;
-      log(place.toString());
-      return "${place.name}, ${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
-    } catch (e) {
-      log(e.toString());
-      return ""; // Failed to get address
-    }
   }
 
   void updateIncidentExplanationFile(File? incidentExplanationFile) {
@@ -153,9 +191,6 @@ class IncidentNotifier extends _$IncidentNotifier {
   }
 
   Future<void> refresh() async {
-    IncidentRegistrationData incidentRegistrationData =
-        IncidentRegistrationData(ref.read(dioProvider));
-
     final incidentTypes = await incidentRegistrationData
         .getIncidentCategories(ref.watch(localeProvider).languageCode);
 
@@ -166,6 +201,12 @@ class IncidentNotifier extends _$IncidentNotifier {
     String locationAndAddress = await getLocationAndAddress(location);
     state = AsyncValue.data(
       IncidentState(
+        stepperDataList: [
+          StepperData(
+            title: "Incident Type",
+            body: "Uploading files to server",
+          )
+        ],
         incidentType: "",
         description: "",
         location: locationAndAddress,
@@ -190,8 +231,6 @@ class IncidentNotifier extends _$IncidentNotifier {
   }
 
   Future<void> getIncidentTypes() async {
-    IncidentRegistrationData incidentRegistrationData =
-        IncidentRegistrationData(ref.read(dioProvider));
     final incidentTypes = await incidentRegistrationData
         .getIncidentCategories(ref.watch(localeProvider).languageCode);
     _updateState(state.value?.copyWith(incidentTypes: incidentTypes));
@@ -222,6 +261,10 @@ class IncidentNotifier extends _$IncidentNotifier {
         state.value?.copyWith(images: [...state.value!.images, ...newImages]));
   }
 
+  void clearImages() {
+    _updateState(state.value?.copyWith(images: []));
+  }
+
   void removeFile(PlatformFile file) {
     _updateState(state.value?.copyWith(
         images: state.value!.images
@@ -237,6 +280,7 @@ class IncidentNotifier extends _$IncidentNotifier {
 }
 
 class IncidentState {
+  final List<StepperData> stepperDataList;
   final List<IncidentTypes> incidentTypes;
   final String incidentType;
   final String description;
@@ -255,8 +299,10 @@ class IncidentState {
   final String complaineeName;
   final String complaineeDesignation;
   final File? incidentExplanation;
+  final bool isLoading;
 
   IncidentState({
+    required this.stepperDataList,
     required this.incidentType,
     required this.description,
     required this.location,
@@ -275,28 +321,32 @@ class IncidentState {
     this.complaineeDesignation = '',
     this.incidentExplanation,
     this.name = "",
+    this.isLoading = false,
   });
-  IncidentState copyWith({
-    List<IncidentTypes>? incidentTypes,
-    String? incidentType,
-    String? description,
-    String? location,
-    String? incidentDate,
-    String? incidentTime,
-    List<PlatformFile>? images,
-    bool? agreed,
-    bool? isCurrentIncident,
-    int? step,
-    String? village,
-    Parliament? parliament,
-    Assembly? constituency,
-    String? mandal,
-    String? complaineeName,
-    String? complaineeDesignation,
-    File? incidentExplanation,
-    String? name,
-  }) =>
+  IncidentState copyWith(
+          {List<IncidentTypes>? incidentTypes,
+          String? incidentType,
+          String? description,
+          String? location,
+          String? incidentDate,
+          String? incidentTime,
+          List<PlatformFile>? images,
+          bool? agreed,
+          bool? isCurrentIncident,
+          int? step,
+          String? village,
+          Parliament? parliament,
+          Assembly? constituency,
+          String? mandal,
+          String? complaineeName,
+          String? complaineeDesignation,
+          File? incidentExplanation,
+          bool? isLoading,
+          String? name,
+          List<StepperData>? stepperData}) =>
       IncidentState(
+        isLoading: isLoading ?? this.isLoading,
+        stepperDataList: stepperData ?? this.stepperDataList,
         incidentTypes: incidentTypes ?? this.incidentTypes,
         incidentType: incidentType ?? this.incidentType,
         description: description ?? this.description,
@@ -337,5 +387,47 @@ class IncidentState {
         complaineeDesignation: this.complaineeDesignation,
         incidentExplanation: null,
         name: this.name,
+        stepperDataList: this.stepperDataList,
       );
+}
+
+Future<String> getLocationAndAddress(loc.Location location) async {
+  bool serviceEnabled;
+  loc.PermissionStatus permissionGranted;
+  loc.LocationData locationData;
+
+  // Check permission
+  permissionGranted = await location.hasPermission();
+  if (permissionGranted == loc.PermissionStatus.denied) {
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != loc.PermissionStatus.granted) {
+      log("Permission not granted");
+      return ""; // Permission not granted
+    }
+  }
+
+  // Check if location service is enabled
+  serviceEnabled = await location.serviceEnabled();
+  if (!serviceEnabled) {
+    serviceEnabled = await location.requestService();
+    if (!serviceEnabled) {
+      log("Location service not enabled");
+      return ""; // Location service not enabled
+    }
+  }
+
+  // Get location
+  locationData = await location.getLocation();
+  double lat = locationData.latitude!;
+  double lng = locationData.longitude!;
+
+  try {
+    List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+    Placemark place = placemarks.first;
+    log(place.toString());
+    return "${place.name}, ${place.street}, ${place.locality}, ${place.postalCode}, ${place.country}";
+  } catch (e) {
+    log(e.toString());
+    return ""; // Failed to get address
+  }
 }

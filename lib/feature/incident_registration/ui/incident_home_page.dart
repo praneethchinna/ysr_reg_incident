@@ -35,9 +35,9 @@ class _RegisterIncidentPageState extends ConsumerState<IncidentHomePage> {
       appBar: RegAppBar(
         centerTitle: true,
         leading: Image.asset(
-          "assets/ysr_logo.png",
-          width: 60,
-          height: 60,
+          "assets/jagan_app_bar_icon.png",
+          height: 200,
+          width: 150,
         ),
         actions: [
           GestureDetector(
@@ -60,6 +60,7 @@ class _RegisterIncidentPageState extends ConsumerState<IncidentHomePage> {
               : 'incident_history'.tr(),
           style: TextStyle(
             color: Colors.white,
+            fontSize: 16,
           ),
         ),
       ),

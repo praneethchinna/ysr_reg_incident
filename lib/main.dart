@@ -85,6 +85,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       theme: ThemeData(
+        fontFamily: "AnekTelugu",
         useMaterial3: false,
         primarySwatch: MaterialColor(
           myCustomBlue.value,

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import 'package:ysr_reg_incident/feature/incident_history/model/incident_history
 import 'package:ysr_reg_incident/feature/incident_history/provider/incident_history_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_history/widgets/show_files.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
+import 'package:ysr_reg_incident/feature/incident_registration/utils.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/build_information_row.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/widgets/reg_text_widget.dart';
 import 'package:ysr_reg_incident/utils/language_equivalent_key.dart';
@@ -501,10 +504,11 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
   }
 
   Widget _buildProofFileSection(String title, List<String> multiUrls) {
-    List<String> urls = multiUrls
-        .map((url) =>
-            "https://peddapuramysrcp.com/api/view-incident-media/video_proof/${url.split("/").last}")
-        .toList();
+    // List<String> urls = multiUrls
+    //     .map((url) =>
+    //         "https://peddapuramysrcp.com/api/view-incident-media/video_proof/${url.split("/").last}")
+    //     .toList();
+    List<String> urls = multiUrls;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -535,16 +539,36 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: isVideo
-                        ? Container(
+                        ? SizedBox(
                             width: 100,
                             height: 100,
-                            color: Colors.grey[300],
-                            child: Image.asset(
-                              'assets/video_icon.png',
-                              width: 40,
-                              height: 40,
-                            ),
-                          )
+                            child: FutureBuilder<Uint8List?>(
+                              future: generateThumbnailFromUrl(url),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                }
+                                if (snapshot.hasError ||
+                                    snapshot.data == null) {
+                                  return const Icon(Icons.videocam,
+                                      size: 50, color: Colors.grey);
+                                }
+                                return Container(
+                                  decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                    image: MemoryImage(snapshot
+                                        .data!), // snapshot.data! should be Uint8List
+                                    fit: BoxFit.cover,
+                                  )),
+                                  child: Icon(
+                                    Icons.play_arrow,
+                                    color: Colors.white,
+                                    size: 50,
+                                  ),
+                                );
+                              },
+                            ))
                         : isAudio
                             ? Container(
                                 width: 100,
@@ -598,13 +622,16 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
   }
 
   Widget _buildFileSection(String title, List<String> multiUrls) {
-    List<String> urls = multiUrls.map((url) {
-      if (url.split(".").last == "pdf") {
-        return "https://peddapuramysrcp.com/api/get-incident-pdf/${url.split("/").last}";
-      }
+    // List<String> urls = multiUrls.map((url) {
+    //   if (url.split(".").last == "pdf") {
+    //     return "https://peddapuramysrcp.com/api/get-incident-pdf/${url.split("/").last}";
+    //   }
+    //
+    //   return "https://peddapuramysrcp.com/api/view-incident-media/proof/${url.split("/").last}";
+    // }).toList();
 
-      return "https://peddapuramysrcp.com/api/view-incident-media/proof/${url.split("/").last}";
-    }).toList();
+    List<String> urls = multiUrls;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -638,16 +665,39 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                     child: Builder(
                       builder: (context) {
                         return switch (true) {
-                          _ when isVideo => Container(
+                          _ when isVideo => SizedBox(
                               width: 100,
                               height: 100,
-                              color: Colors.grey[300],
-                              child: Image.asset(
-                                'assets/video_icon.png',
-                                width: 40,
-                                height: 40,
-                              ),
-                            ),
+                              child: FutureBuilder<Uint8List?>(
+                                future: generateThumbnailFromUrl(url),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return SizedBox(
+                                      width: 10,
+                                        height: 10,
+                                        child: const CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError ||
+                                      snapshot.data == null) {
+                                    return const Icon(Icons.videocam,
+                                        size: 50, color: Colors.grey);
+                                  }
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                      image: MemoryImage(snapshot
+                                          .data!), // snapshot.data! should be Uint8List
+                                      fit: BoxFit.cover,
+                                    )),
+                                    child: Icon(
+                                      Icons.play_arrow,
+                                      color: Colors.white,
+                                      size: 50,
+                                    ),
+                                  );
+                                },
+                              )),
                           _ when isAudio => Container(
                               width: 100,
                               height: 100,
@@ -658,7 +708,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                                 size: 60,
                               ),
                             ),
-                        _ when isPdf => Container(
+                          _ when isPdf => Container(
                               width: 100,
                               height: 100,
                               color: Colors.grey[300],
@@ -719,7 +769,5 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
   bool _isAudio(String url) =>
       url.endsWith('.mp3') || url.endsWith('.wav') || url.endsWith('.ogg');
 
-  bool _isPdf(String url) =>
-      url.endsWith('.pdf') || url.endsWith('.PDF');
-
+  bool _isPdf(String url) => url.endsWith('.pdf') || url.endsWith('.PDF');
 }

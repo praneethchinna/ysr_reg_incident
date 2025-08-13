@@ -50,9 +50,9 @@ class RegBackgroundTheme extends StatelessWidget {
                 ),
               ],
               Image.asset(
-                'assets/background_theme.png',
-                width: 250,
-                height: 250,
+                'assets/jagan_otp_image.png',
+                width: MediaQuery.of(context).size.width,
+                height: 400,
               ),
               child,
             ],

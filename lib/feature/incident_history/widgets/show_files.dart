@@ -91,54 +91,62 @@ class VideoFullScreenPage extends StatefulWidget {
 
 class _VideoFullScreenPageState extends State<VideoFullScreenPage> {
   late VideoPlayerController _videoPlayerController;
-  late ChewieController _chewieController;
+  ChewieController? _chewieController;
 
   @override
   void initState() {
     super.initState();
 
-    _videoPlayerController = VideoPlayerController.network(widget.videoUrl);
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController,
-      autoPlay: true,
-      looping: false,
-      fullScreenByDefault: true,
-      allowFullScreen: true,
-      deviceOrientationsAfterFullScreen: [
-        DeviceOrientation.portraitUp,
-      ],
-      deviceOrientationsOnEnterFullScreen: [
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ],
-    );
+    // Force landscape orientation
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    _videoPlayerController = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        _chewieController = ChewieController(
+          videoPlayerController: _videoPlayerController,
+          autoPlay: true,
+          looping: false,
+        );
+        setState(() {}); // Refresh UI when initialized
+      });
   }
 
   @override
   void dispose() {
+    // Restore portrait orientation
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     _videoPlayerController.dispose();
-    _chewieController.dispose();
+    _chewieController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Video Player"),
-        backgroundColor: Colors.black,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Center(
-          child: Chewie(controller: _chewieController),
+        child: _chewieController != null &&
+            _videoPlayerController.value.isInitialized
+            ? Center(
+          child: AspectRatio(
+            aspectRatio: _videoPlayerController.value.aspectRatio,
+            child: Chewie(controller: _chewieController!),
+          ),
+        )
+            : const Center(
+          child: CircularProgressIndicator(color: Colors.white),
         ),
       ),
     );
   }
 }
-
 Widget _buildAudioPlayer(String url) {
   return _audioPlayer(url);
 }

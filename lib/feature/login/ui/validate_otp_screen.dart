@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -14,6 +15,7 @@ import 'package:ysr_reg_incident/feature/onboarding/screen_one.dart';
 import 'package:ysr_reg_incident/feature/signup/ui/signup_screen.dart';
 import 'package:ysr_reg_incident/services/dio_provider.dart';
 import 'package:ysr_reg_incident/services/shared_preferences.dart';
+import 'package:ysr_reg_incident/utils/awsome_snakbar.dart';
 import 'package:ysr_reg_incident/utils/reg_background_theme.dart';
 import 'package:ysr_reg_incident/utils/reg_buttons.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -226,15 +228,19 @@ class _OtpScreenState extends ConsumerState<ValidateOtpScreen> {
       prefs.setString("userData", jsonEncode(value.toJson()));
       ref.read(loginResponseProvider.notifier).state = value;
       showSuccessDialog(context);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Otp verified scuccessfully"),
-      ));
+      AwsomeSnackbar.showSuccessSnackbar(
+        context: context,
+        contentType: ContentType.success,
+        title: "Success",
+        message: "Otp verified scuccessfully",
+      );
 
       EasyLoading.dismiss();
     }).onError((error, stackTrace) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(error.toString()),
-      ));
+
+      AwsomeSnackbar.showSuccessSnackbar(context: context, contentType: ContentType.failure, title: "failed", message: error.toString());
+
+
       EasyLoading.dismiss();
     });
   }

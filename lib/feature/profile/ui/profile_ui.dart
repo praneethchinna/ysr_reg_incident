@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ysr_reg_incident/app_colors/app_colors.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/provider/incident_registration_provider.dart';
 import 'package:ysr_reg_incident/feature/incident_registration/ui/incident_home_page.dart';
@@ -25,168 +26,195 @@ class UserProfileUI extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileData = ref.watch(profileIncidentProvider);
-    return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: RegAppBar(
-          title: Text(
-            "profile".tr(),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    return SafeArea(
+      child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: RegAppBar(
+            title: Text(
+              "profile".tr(),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            centerTitle: true,
+            // actions: [
+            //   GestureDetector(
+            //       onTap: () {
+            //         Navigator.push(context,
+            //             MaterialPageRoute(builder: (context) => ProfileEdit()));
+            //       },
+            //       child: Padding(
+            //         padding: const EdgeInsets.symmetric(horizontal: 10),
+            //         child: Icon(MdiIcons.accountEdit),
+            //       ))
+            // ],
           ),
-          centerTitle: true,
-          // actions: [
-          //   GestureDetector(
-          //       onTap: () {
-          //         Navigator.push(context,
-          //             MaterialPageRoute(builder: (context) => ProfileEdit()));
-          //       },
-          //       child: Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 10),
-          //         child: Icon(MdiIcons.accountEdit),
-          //       ))
-          // ],
-        ),
-        body:
-        // profileData.when(
-        //     data: (value) {
-        //       final data = value;
-               SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: 20),
-                    // Column(
-                    //   children: [
-                    //     Image.asset(
-                    //       'assets/profile.png',
-                    //       width: 100,
-                    //       height: 100,
-                    //       fit: BoxFit.contain,
-                    //     ),
-                    //     Gap(10),
-                    //     Text(
-                    //       data.name,
-                    //       style: TextStyle(
-                    //           fontSize: 20,
-                    //           fontWeight: FontWeight.w600,
-                    //           color: Colors.black),
-                    //     ),
-                    //     Gap(10),
-                    //   ],
-                    // ),
-                    // Gap(10),
-                    // Language Selector
-                    LanguageSelector(showLabel: false),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.language,
-                            size: 24,
-                            color: Colors.blue,
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            'language'.tr(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
+          body:
+              // profileData.when(
+              //     data: (value) {
+              //       final data = value;
+              Column(
+            children: [
+              SizedBox(height: 20),
+              // Column(
+              //   children: [
+              //     Image.asset(
+              //       'assets/profile.png',
+              //       width: 100,
+              //       height: 100,
+              //       fit: BoxFit.contain,
+              //     ),
+              //     Gap(10),
+              //     Text(
+              //       data.name,
+              //       style: TextStyle(
+              //           fontSize: 20,
+              //           fontWeight: FontWeight.w600,
+              //           color: Colors.black),
+              //     ),
+              //     Gap(10),
+              //   ],
+              // ),
+              // Gap(10),
+              // Language Selector
+
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.grey.shade200,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
                     ),
-
-                    Gap(10),
-                    // if (data.mobile.isNotEmpty) ...[
-                    //   ProfileCard(
-                    //     imagePath: 'assets/number_icon.png',
-                    //     title: "phone".tr(),
-                    //     value: data.mobile,
-                    //   ),
-                    // ],
-                    // if (data.email.isNotEmpty) ...[
-                    //   ProfileCard(
-                    //     imagePath: 'assets/email_icon.png',
-                    //     title: "email".tr(),
-                    //     value: data.email,
-                    //   ),
-                    // ],
-                    // if (data.gender.isNotEmpty) ...[
-                    //   ProfileCard(
-                    //     imagePath: 'assets/gender.png',
-                    //     title: "gender".tr(),
-                    //     value: data.gender,
-                    //   ),
-                    // ],
-                    // if (data.country.isNotEmpty) ...[
-                    //   ProfileCard(
-                    //     imagePath: 'assets/country_icon.png',
-                    //     title: "country".tr(),
-                    //     value: data.country,
-                    //   ),
-                    // ],
-                    // if (data.parliament.isNotEmpty) ...[
-                    //   ProfileCard(
-                    //     imagePath: 'assets/parliament_icon.png',
-                    //     title: "parliament".tr(),
-                    //     value: data.parliament,
-                    //   ),
-                    // ],
-                    // if (data.constituency.isNotEmpty) ...[
-                    //   ProfileCard(
-                    //     imagePath: 'assets/assembly_icon.png',
-                    //     title: "constituency".tr(),
-                    //     value: data.constituency,
-                    //   ),
-                    // ],
-
-                    SizedBox(height: 30),
-                    RegButton(
-                        child: Text("logout".tr()),
-                        onPressed: () async {
-                          ref.read(loginResponseProvider.notifier).state = null;
-
-                          ref.read(tabIndexProvider.notifier).state = 0;
-                          final sharedPreferences =
-                              await ref.read(sharedPreferencesProvider.future);
-                          await sharedPreferences.setString("userData", "");
-                          ref.read(mobileNumberProvider.notifier).state = "";
-
-                          ref.invalidate(profileIncidentProvider);
-
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => OtpScreen1(),
-                            ),
-                            (Route<dynamic> route) => false,
-                          );
-                        }),
-                    Gap(20)
                   ],
                 ),
-              )
-            // },
-            // error: (error, stack) {
-            //   return Center(
-            //     child: Text(error.toString()),
-            //   );
-            // },
-            // loading: () => Center(
-            //       child: CircularProgressIndicator.adaptive(),
-            //     ))
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.language,
+                      size: 24,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'language'.tr(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Spacer(),
+                    LanguageSelector(showLabel: false),
+                  ],
+                ),
+              ),
+
+              Gap(10),
+              // if (data.mobile.isNotEmpty) ...[
+              //   ProfileCard(
+              //     imagePath: 'assets/number_icon.png',
+              //     title: "phone".tr(),
+              //     value: data.mobile,
+              //   ),
+              // ],
+              // if (data.email.isNotEmpty) ...[
+              //   ProfileCard(
+              //     imagePath: 'assets/email_icon.png',
+              //     title: "email".tr(),
+              //     value: data.email,
+              //   ),
+              // ],
+              // if (data.gender.isNotEmpty) ...[
+              //   ProfileCard(
+              //     imagePath: 'assets/gender.png',
+              //     title: "gender".tr(),
+              //     value: data.gender,
+              //   ),
+              // ],
+              // if (data.country.isNotEmpty) ...[
+              //   ProfileCard(
+              //     imagePath: 'assets/country_icon.png',
+              //     title: "country".tr(),
+              //     value: data.country,
+              //   ),
+              // ],
+              // if (data.parliament.isNotEmpty) ...[
+              //   ProfileCard(
+              //     imagePath: 'assets/parliament_icon.png',
+              //     title: "parliament".tr(),
+              //     value: data.parliament,
+              //   ),
+              // ],
+              // if (data.constituency.isNotEmpty) ...[
+              //   ProfileCard(
+              //     imagePath: 'assets/assembly_icon.png',
+              //     title: "constituency".tr(),
+              //     value: data.constituency,
+              //   ),
+              // ],
+
+              Spacer(),
+              RegButton(
+                  child: Text("logout".tr()),
+                  onPressed: () async {
+                    ref.read(loginResponseProvider.notifier).state = null;
+
+                    ref.read(tabIndexProvider.notifier).state = 0;
+                    final sharedPreferences =
+                        await ref.read(sharedPreferencesProvider.future);
+                    await sharedPreferences.setString("userData", "");
+                    ref.read(mobileNumberProvider.notifier).state = "";
+
+                    ref.invalidate(profileIncidentProvider);
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OtpScreen1(),
+                      ),
+                      (Route<dynamic> route) => false,
+                    );
+                  }),
+              Gap(20),
+              FutureBuilder<String>(
+                future:
+                    PackageInfo.fromPlatform().then((value) => value.version),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Center(
+                      child: Text(
+                        'Version ${snapshot.data}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    );
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                },
+              ),
+              Gap(10),
+
+              Gap(20)
+            ],
+          )
+          // },
+          // error: (error, stack) {
+          //   return Center(
+          //     child: Text(error.toString()),
+          //   );
+          // },
+          // loading: () => Center(
+          //       child: CircularProgressIndicator.adaptive(),
+          //     ))
+          ),
     );
   }
 }
