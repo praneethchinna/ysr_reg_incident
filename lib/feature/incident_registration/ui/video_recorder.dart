@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
+import 'package:gap/gap.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:path/path.dart' as p;
 
@@ -139,8 +141,6 @@ class _VideoRecorderState extends State<VideoRecorder> {
         _videoPath = null;
       });
     }
-    Navigator.pop(context);
-
     Navigator.pop(context, null);
   }
 
@@ -166,19 +166,31 @@ class _VideoRecorderState extends State<VideoRecorder> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          CameraPreview(_controller!),
-
-          // Switch camera button
-          Positioned(
-            top: 40,
-            right: 20,
-            child: _controller != null && _controller!.value.isRecordingVideo
-                ? const SizedBox.shrink()
-                : IconButton(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Column(
+          children: [
+            Gap(20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "selfie_note".tr(),
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Gap(20),
+            Stack(
+              children: [
+                CameraPreview(_controller!),
+                Positioned(
+                  top: 50,
+                  right: 20,
+                  child: _controller != null && _controller!.value.isRecordingVideo
+                      ? const SizedBox.shrink()
+                      : IconButton(
                     onPressed: _switchCamera,
                     icon: const Icon(
                       Icons.cameraswitch,
@@ -186,61 +198,66 @@ class _VideoRecorderState extends State<VideoRecorder> {
                       size: 32,
                     ),
                   ),
-          ),
+                ),
 
-          // Bottom controls
-          Positioned(
-            bottom: 50,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (_isRecording)
-                  Text(
-                    "⏱ $_recordDuration s / 60",
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                const SizedBox(height: 10),
-
-                // Recording controls
-                if (!_recordingFinished)
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isRecording ? Colors.red : Colors.green,
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(20),
-                    ),
-                    onPressed: _isRecording ? _stopRecording : _startRecording,
-                    child: Icon(
-                      _isRecording ? Icons.stop : Icons.videocam,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-
-                // After recording: Cancel / Accept buttons
-                if (_recordingFinished)
-                  Row(
+                // Bottom controls
+                Positioned(
+                  bottom: 40,
+                  left: 0,
+                  right: 0,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.close,
-                            color: Colors.red, size: 40),
-                        onPressed: _cancelVideo,
-                      ),
-                      const SizedBox(width: 30),
-                      IconButton(
-                        icon: const Icon(Icons.check,
-                            color: Colors.green, size: 40),
-                        onPressed: _acceptVideo,
-                      ),
+                      if (_isRecording)
+                        Text(
+                          "⏱ $_recordDuration s / 60",
+                          style: const TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      const SizedBox(height: 10),
+
+                      // Recording controls
+                      if (!_recordingFinished)
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                            _isRecording ? Colors.red : Colors.green,
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(20),
+                          ),
+                          onPressed:
+                          _isRecording ? _stopRecording : _startRecording,
+                          child: Icon(
+                            _isRecording ? Icons.stop : Icons.videocam,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+
+                      // After recording: Cancel / Accept buttons
+                      if (_recordingFinished)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.close,
+                                  color: Colors.red, size: 40),
+                              onPressed: _cancelVideo,
+                            ),
+                            const SizedBox(width: 30),
+                            IconButton(
+                              icon: const Icon(Icons.check,
+                                  color: Colors.green, size: 40),
+                              onPressed: _acceptVideo,
+                            ),
+                          ],
+                        ),
                     ],
                   ),
+                )
               ],
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }
