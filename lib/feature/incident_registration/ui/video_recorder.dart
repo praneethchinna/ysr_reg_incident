@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:path/path.dart' as p;
+
+import 'dart:io';
 
 class VideoRecorder extends StatefulWidget {
   const VideoRecorder({super.key});
@@ -80,8 +84,7 @@ class _VideoRecorderState extends State<VideoRecorder> {
       });
 
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-
-        if(timer.tick == 60) {
+        if (timer.tick == 60) {
           _stopRecording();
         }
 
@@ -104,17 +107,40 @@ class _VideoRecorderState extends State<VideoRecorder> {
       final file = await _controller!.stopVideoRecording();
       _timer?.cancel();
 
+      // Save as .mp4 in Movies folder so gallery can see it
+      final moviesDir = Directory('/storage/emulated/0/Movies');
+      if (!moviesDir.existsSync()) {
+        moviesDir.createSync(recursive: true);
+      }
+      final newPath = p.join(
+        moviesDir.path,
+        "video_${DateTime.now().millisecondsSinceEpoch}.mp4",
+      );
+
+      await File(file.path).copy(newPath);
+      await GallerySaver.saveVideo(newPath); // Trigger gallery update
+
       setState(() {
         _isRecording = false;
         _recordingFinished = true;
-        _videoPath = file.path;
+        _videoPath = newPath;
       });
+
+      debugPrint("✅ Video saved at: $newPath");
     } catch (e) {
       debugPrint("❌ Error stopping video recording: $e");
     }
   }
 
   void _cancelVideo() {
+    if (_videoPath != null) {
+      File(_videoPath!).deleteSync();
+      setState(() {
+        _videoPath = null;
+      });
+    }
+    Navigator.pop(context);
+
     Navigator.pop(context, null);
   }
 
@@ -126,7 +152,6 @@ class _VideoRecorderState extends State<VideoRecorder> {
 
   @override
   void dispose() {
-
     _controller?.dispose();
     _timer?.cancel();
     WakelockPlus.disable();

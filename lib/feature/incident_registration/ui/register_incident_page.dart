@@ -572,15 +572,13 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                         //           File(result.path));
                                         // }
 
-
-
                                         final path = await recordVideo(context);
 
                                         if (path != null) {
                                           debugPrint("✅ Video saved at: $path");
-                                            notifier
-                                                .updateIncidentExplanationFile(
-                                                    File(path));
+                                          notifier
+                                              .updateIncidentExplanationFile(
+                                                  File(path));
                                         } else {
                                           debugPrint("⚠ Recording cancelled");
                                         }
@@ -1040,7 +1038,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                                                                           child:
                                                                               Icon(
                                                                         color: Colors
-                                                                            .deepPurpleAccent,
+                                                                            .white,
                                                                         size:
                                                                             50,
                                                                         Icons
@@ -1408,7 +1406,7 @@ class _RegisterIncidentPageState extends ConsumerState<RegisterIncidentPage> {
                 Container(
                   width: double.infinity,
                   height: double.infinity,
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.grey.withOpacity(0.7),
                   child: Center(
                       child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

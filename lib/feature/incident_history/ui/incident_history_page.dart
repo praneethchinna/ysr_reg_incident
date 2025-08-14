@@ -479,7 +479,7 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                                   Column(
                                     children: [
                                       _buildProofFileSection(
-                                          'incident_proof'.tr(), [
+                                          'incident_explanation_video'.tr(), [
                                         widget.incident.incidentProofPaths ?? ""
                                       ]),
                                     ],
@@ -547,7 +547,13 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return const CircularProgressIndicator();
+                                  return SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: Center(
+                                        child:
+                                            const CircularProgressIndicator(),
+                                      ));
                                 }
                                 if (snapshot.hasError ||
                                     snapshot.data == null) {
@@ -674,9 +680,10 @@ class _IncidentCardState extends ConsumerState<_IncidentCard>
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
                                     return SizedBox(
-                                      width: 10,
+                                        width: 10,
                                         height: 10,
-                                        child: const CircularProgressIndicator());
+                                        child:
+                                            const CircularProgressIndicator());
                                   }
                                   if (snapshot.hasError ||
                                       snapshot.data == null) {
